@@ -1,7 +1,8 @@
 import argparse
+from typing import List
 
-import pandas as pd
-import plotnine as p9
+import pandas as pd # type: ignore
+import plotnine as p9 # type: ignore
 
 
 # The complement of this set is what thecrag considers a 'successful' ascent.
@@ -13,7 +14,7 @@ THECRAG_NOT_ON = set(['Attempt', 'Hang dog', 'Retreat', 'Target',
 NOT_ON = THECRAG_NOT_ON.union({'Tick', 'Aid solo', 'Top rope', 'Second'})
 
 
-def clean_free(ascent_type):
+def clean_free(ascent_type: str) -> bool:
     """ Returns true if an ascent type is clean and free
         - Clean: The rope was not weighted (toproping is acceptable)
         - Free: Not aid climbing
@@ -21,7 +22,7 @@ def clean_free(ascent_type):
     return ascent_type not in NOT_ON
 
 
-def is_ewbanks(ascent_grade):
+def is_ewbanks(ascent_grade: str) -> bool:
     """ If a grade can be converted to an integer, then it must be in the
     Ewbanks system, or at least not French or YDS."""
     try:
@@ -32,7 +33,9 @@ def is_ewbanks(ascent_grade):
         return True
 
 
-def prepare_df(df):
+def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
+    """ The name of this function suggests it's not yet clear what I want it to do.
+    """
 
     # Get all clean free ascents (not weighting the rope)
     df = df[df['Ascent Type'].apply(clean_free)]
@@ -58,6 +61,11 @@ def prepare_df(df):
     return df
 
 
+def create_plots(df: pd.DataFrame) -> List[p9.ggplot]:
+    plots = [p9.ggplot(df) + p9.geom_bar(p9.aes(x='Ewbanks Grade'))]
+    return plots
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('csv', help='Your logbook from thecrag.com in CSV format.')
 
@@ -66,5 +74,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     df = pd.read_csv(args.csv)
     df = prepare_df(df)
-    plot = [p9.ggplot(df) + p9.geom_bar(p9.aes(x='Ewbanks Grade'))]
-    p9.save_as_pdf_pages(plot)
+    plots = create_plots(df)
+    p9.save_as_pdf_pages(plots, filename='plot.pdf')
