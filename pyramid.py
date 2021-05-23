@@ -39,18 +39,20 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
 
     # Get all clean free ascents (not weighting the rope)
     df = df[df['Ascent Type'].apply(clean_free)]
+    print("Number of clean ascents: {}".format(len(df)))
 
     # Temporarily: just removing duplicate routes so we can just plot a pyramid
     # for clean ascents. When we want to plot different ascent types with
     # different colours, this will break down because it might not choose the
     # best ascent type (e.g. it might prune out a flash in favour of a
-    # red-point
+    # red-point. # TODO handle choosing the best ascent type
     df = df.drop_duplicates(['Route ID'])
     # TODO Remove repeats by taking the best ascent.
 
     # Remove non-Ewbanks graded stuff.
     df = df[df['Ascent Grade'].apply(is_ewbanks)]
-    # Convert remaining grades to Ewbanks
+    print("Number of unique clean ascents: {}".format(len(df)))
+    # TODO Convert remaining grades to Ewbanks
     df['Ewbanks Grade'] = df['Ascent Grade'].apply(lambda x: int(x))
 
     # TODO Break stats down by pitches for more fine-grained info. Currently
@@ -66,6 +68,43 @@ def create_plots(df: pd.DataFrame) -> List[p9.ggplot]:
     return plots
 
 
+def create_stack_chart(df: pd.DataFrame):
+    """
+    import numpy as np
+    import pandas as pd
+    from pandas import Series, DataFrame
+    import matplotlib.pyplot as plt
+
+    data1 = [23,85, 72, 43, 52]
+    data2 = [42, 35, 21, 16, 9]
+    plt.bar(range(len(data1)), data1)
+    plt.bar(range(len(data2)), data2, bottom=data1)
+    plt.show()
+    """
+
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    #Groups = np.array([[7, 33, 17, 27],[6, 24, 22, 20],[14, 12, 5, 22], [3, 2, 1, 4], [5, 2, 2, 4]])
+    #group_sum = np.array([0, 0])
+    onsights = np.zeros(24)
+    redpoints = np.zeros(24)
+    pinkpoints = np.zeros(24)
+    for grade in range(1, 24):
+        onsights[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'])
+        # TODO need to remove non-unique redbpoints.
+        redpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'])
+        pinkpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Pink point'])
+
+    print(onsights)
+    print(redpoints)
+    plt.barh(range(24), onsights, color='green')
+    plt.barh(range(24), redpoints, left = onsights, color='red')
+    plt.barh(range(24), pinkpoints, left = onsights + redpoints, color='pink')
+
+    plt.show()
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('csv', help='Your logbook from thecrag.com in CSV format.')
 
@@ -74,5 +113,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     df = pd.read_csv(args.csv)
     df = prepare_df(df)
+    print(set(df['Ascent Type']))
     plots = create_plots(df)
-    p9.save_as_pdf_pages(plots, filename='plot.pdf')
+    p9.save_as_pdf_pages(plots, filename='plot2.pdf')
+    create_stack_chart(df)
