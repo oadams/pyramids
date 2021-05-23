@@ -88,19 +88,27 @@ def create_stack_chart(df: pd.DataFrame):
     #Groups = np.array([[7, 33, 17, 27],[6, 24, 22, 20],[14, 12, 5, 22], [3, 2, 1, 4], [5, 2, 2, 4]])
     #group_sum = np.array([0, 0])
     onsights = np.zeros(24)
+    flashes = np.zeros(24)
     redpoints = np.zeros(24)
     pinkpoints = np.zeros(24)
+    clean_topropes = np.zeros(24)
     for grade in range(1, 24):
         onsights[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'])
+        flashes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Flash'])
         # TODO need to remove non-unique redbpoints.
         redpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'])
         pinkpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Pink point'])
+        clean_topropes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo', 'Second clean'])])
+
+
 
     print(onsights)
     print(redpoints)
-    plt.barh(range(24), onsights, color='green')
-    plt.barh(range(24), redpoints, left = onsights, color='red')
-    plt.barh(range(24), pinkpoints, left = onsights + redpoints, color='pink')
+    plt.barh(range(1, 25), onsights, color='green')
+    plt.barh(range(1, 25), flashes, left = onsights, color='orange')
+    plt.barh(range(1, 25), redpoints, left = onsights + flashes, color='red')
+    plt.barh(range(1, 25), pinkpoints, left = onsights + flashes + redpoints, color='pink')
+    plt.barh(range(1, 25), clean_topropes, left = onsights + flashes + redpoints + pinkpoints, color='gray')
 
     plt.show()
 
