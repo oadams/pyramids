@@ -41,6 +41,10 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     df = df[df['Ascent Type'].apply(clean_free)]
     print("Number of clean ascents: {}".format(len(df)))
 
+    df['Ascent Type'] = pd.Categorical(df['Ascent Type'], ['Onsight', 'Flash', 'Red point', 'Pink point', 'Top Rope onsight', 'Top rope flash', 'Second clean', 'Top rope clean', 'Roped Solo'])
+
+    df = df.sort_values('Ascent Type')
+
     # Temporarily: just removing duplicate routes so we can just plot a pyramid
     # for clean ascents. When we want to plot different ascent types with
     # different colours, this will break down because it might not choose the
@@ -92,7 +96,9 @@ def create_stack_chart(df: pd.DataFrame):
     redpoints = np.zeros(24)
     pinkpoints = np.zeros(24)
     clean_topropes = np.zeros(24)
-    for grade in range(1, 24):
+    for grade in range(1, 25):
+        if grade == 18:
+            print(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'])
         onsights[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'])
         flashes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Flash'])
         # TODO need to remove non-unique redbpoints.
@@ -104,6 +110,7 @@ def create_stack_chart(df: pd.DataFrame):
 
     print(onsights)
     print(redpoints)
+    print(clean_topropes)
     plt.barh(range(1, 25), onsights, color='green')
     plt.barh(range(1, 25), flashes, left = onsights, color='orange')
     plt.barh(range(1, 25), redpoints, left = onsights + flashes, color='red')
