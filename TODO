@@ -1,5 +1,6 @@
 - Distinguish between toprope onsights, flashes and toprope cleans
 - distinguish between clean seconds and second flashes (do this by seeing if
   the person has done the route before).
+- Present information on a pitch-per-pitch basis, rather than the full route.
 - Do timelapse animation
 - Clean up the code
