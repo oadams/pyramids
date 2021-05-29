@@ -41,7 +41,7 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     df = df[df['Ascent Type'].apply(clean_free)]
     print("Number of clean ascents: {}".format(len(df)))
 
-    df['Ascent Type'] = pd.Categorical(df['Ascent Type'], ['Onsight', 'Flash', 'Red point', 'Pink point', 'Top Rope onsight', 'Top rope flash', 'Second clean', 'Top rope clean', 'Roped Solo'])
+    df['Ascent Type'] = pd.Categorical(df['Ascent Type'], ['Onsight', 'Flash', 'Red point', 'Pink point', 'Clean', 'Top Rope onsight', 'Top rope flash', 'Second clean', 'Top rope clean', 'Roped Solo'])
 
     df = df.sort_values('Ascent Type')
 
@@ -95,6 +95,7 @@ def create_stack_chart(df: pd.DataFrame):
     flashes = np.zeros(24)
     redpoints = np.zeros(24)
     pinkpoints = np.zeros(24)
+    cleans = np.zeros(24)
     clean_topropes = np.zeros(24)
     for grade in range(1, 25):
         if grade == 18:
@@ -104,6 +105,7 @@ def create_stack_chart(df: pd.DataFrame):
         # TODO need to remove non-unique redbpoints.
         redpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'])
         pinkpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Pink point'])
+        cleans[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Clean'])
         clean_topropes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo', 'Second clean'])])
 
 
@@ -114,12 +116,14 @@ def create_stack_chart(df: pd.DataFrame):
 
     print(onsights)
     print(redpoints)
+    print(cleans)
     print(clean_topropes)
     plt.barh(range(1, 25), onsights, color='green')
     plt.barh(range(1, 25), flashes, left = onsights, color='orange')
     plt.barh(range(1, 25), redpoints, left = onsights + flashes, color='red')
     plt.barh(range(1, 25), pinkpoints, left = onsights + flashes + redpoints, color='pink')
-    plt.barh(range(1, 25), clean_topropes, left = onsights + flashes + redpoints + pinkpoints, color='gray')
+    plt.barh(range(1, 25), cleans, left = onsights + flashes + redpoints + pinkpoints, color='xkcd:sky blue')
+    plt.barh(range(1, 25), clean_topropes, left = onsights + flashes + redpoints + pinkpoints + cleans, color='gray')
 
     plt.show()
 
