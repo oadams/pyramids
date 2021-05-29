@@ -161,24 +161,26 @@ def create_stack_chart(df: pd.DataFrame):
     import copy
     sum_ = copy.copy(counts['trad_onsights'])
 
-    plt.barh(range(1, 25), counts['trad_onsights'], color='green')
-    plt.barh(range(1, 25), counts['sport_onsights'], left = sum_, color='#98ff98')
+    plt.barh(range(1, 25), counts['trad_onsights'], color='green', label='Trad onsight')
+    plt.barh(range(1, 25), counts['sport_onsights'], left = sum_, color='#98ff98', label='Sport onsight')
     sum_ += counts['sport_onsights']
-    plt.barh(range(1, 25), counts['trad_flashes'], left = sum_, color='#800020')
+    plt.barh(range(1, 25), counts['trad_flashes'], left = sum_, color='#800020', label='Trad flash')
     sum_ += counts['trad_flashes']
     #plt.barh(range(1, 25), sport_flashes, left = trad_onsights + sport_onsights + trad_flashes, color='orange')
-    plt.barh(range(1, 25), counts['trad_redpoints'], left = sum_, color='red')
+    plt.barh(range(1, 25), counts['trad_redpoints'], left = sum_, color='red', label='Trad redpoint')
     sum_ += counts['trad_redpoints']
     #plt.barh(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
-    plt.barh(range(1, 25), counts['pinkpoints'], left = sum_, color='pink')
+    plt.barh(range(1, 25), counts['pinkpoints'], left = sum_, color='pink', label='Pinkpoint (sport or trad)')
     sum_ += counts['pinkpoints']
-    plt.barh(range(1, 25), counts['cleans'], left = sum_, color='xkcd:sky blue')
+    plt.barh(range(1, 25), counts['cleans'], left = sum_, color='xkcd:sky blue', label='Clean lead (yoyo, simulclimbing)')
     sum_ += counts['cleans']
-    plt.barh(range(1, 25), counts['clean_seconds'], left = sum_, color='#FFA500')
+    plt.barh(range(1, 25), counts['clean_seconds'], left = sum_, color='#FFA500', label='Clean second')
     sum_ += counts['clean_seconds']
-    plt.barh(range(1, 25), counts['clean_topropes'], left = sum_, color='#FFFF00')
+    plt.barh(range(1, 25), counts['clean_topropes'], left = sum_, color='#FFFF00', label='Clean toprope')
     sum_ += counts['clean_topropes']
-    plt.barh(range(1, 25), counts['battle_to_top'], left = sum_, color='gray')
+    plt.barh(range(1, 25), counts['battle_to_top'], left = sum_, color='gray', label='Battle to top (hangdog, second/toprope weighting rope)')
+
+    leg = ax.legend(loc='center', bbox_to_anchor=(0.5, -0.10), shadow=False, ncol=2)
 
     plt.show()
 
