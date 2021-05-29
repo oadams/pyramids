@@ -171,7 +171,8 @@ def create_stack_chart(df: pd.DataFrame):
     #plt.barh(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
     plt.barh(range(1, 25), pinkpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints, color='pink')
     plt.barh(range(1, 25), cleans, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints, color='xkcd:sky blue')
-    plt.barh(range(1, 25), clean_topropes, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + cleans, color='gray')
+    plt.barh(range(1, 25), clean_topropes, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints + cleans, color='gray')
+    print(trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints)
 
     plt.show()
 
