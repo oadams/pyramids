@@ -54,8 +54,19 @@ def is_ewbanks(ascent_grade: str) -> bool:
     else:
         return True
 
-def is_ewbanks_or_ysd(ascent_grade) -> bool:
+def is_ewbanks_or_ysd(ascent_grade: str) -> bool:
     return is_ewbanks(ascent_grade) or is_ysd(ascent_grade)
+
+
+def classify_style(crag_path: str) -> str:
+    if 'Arapiles' in crag_path: return 'Trad'
+    elif 'Bad Moon Rising Wall' in crag_path: return 'Trad'
+    elif 'Taipan Wall' in crag_path: return 'Trad'
+    elif 'The Green Wall' in crag_path: return 'Trad'
+    elif 'Mt Stapylton Amphitheatre - Central Buttress' in crag_path: return 'Trad'
+    elif 'Summerday Valley' in crag_path: return 'Trad'
+    else:
+        return 'Sport'
 
 
 def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -77,6 +88,8 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     # red-point. # TODO handle choosing the best ascent type
     df = df.drop_duplicates(['Route ID'])
     # TODO Remove repeats by taking the best ascent.
+
+    df['Style'] = df['Crag Path'].apply(lambda x: classify_style(x))
 
     # Remove non-Ewbanks/YSD graded stuff.
     df = df[df['Ascent Grade'].apply(is_ewbanks_or_ysd)]
@@ -117,19 +130,25 @@ def create_stack_chart(df: pd.DataFrame):
 
     #Groups = np.array([[7, 33, 17, 27],[6, 24, 22, 20],[14, 12, 5, 22], [3, 2, 1, 4], [5, 2, 2, 4]])
     #group_sum = np.array([0, 0])
-    onsights = np.zeros(24)
-    flashes = np.zeros(24)
-    redpoints = np.zeros(24)
+    trad_onsights = np.zeros(24)
+    sport_onsights = np.zeros(24)
+    trad_flashes = np.zeros(24)
+    sport_flashes = np.zeros(24)
+    trad_redpoints = np.zeros(24)
+    sport_redpoints = np.zeros(24)
     pinkpoints = np.zeros(24)
     cleans = np.zeros(24)
     clean_topropes = np.zeros(24)
     for grade in range(1, 25):
         if grade == 18:
             print(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'])
-        onsights[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'])
-        flashes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Flash'])
+        trad_onsights[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'][df['Style'] == 'Trad'])
+        sport_onsights[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'][df['Style'] == 'Sport'])
+        trad_flashes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Flash'][df['Style'] == 'Trad'])
+        sport_flashes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Flash'][df['Style'] == 'Sport'])
         # TODO need to remove non-unique redbpoints.
-        redpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'])
+        trad_redpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'][df['Style'] == 'Trad'])
+        sport_redpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'][df['Style'] == 'Sport'])
         pinkpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Pink point'])
         cleans[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Clean'])
         clean_topropes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo', 'Second clean'])])
@@ -140,16 +159,19 @@ def create_stack_chart(df: pd.DataFrame):
     major_ticks = np.arange(0, 26)
     ax.set_yticks(major_ticks)
 
-    print(onsights)
-    print(redpoints)
+    print(trad_onsights)
+    print(trad_redpoints)
     print(cleans)
     print(clean_topropes)
-    plt.barh(range(1, 25), onsights, color='green')
-    plt.barh(range(1, 25), flashes, left = onsights, color='orange')
-    plt.barh(range(1, 25), redpoints, left = onsights + flashes, color='red')
-    plt.barh(range(1, 25), pinkpoints, left = onsights + flashes + redpoints, color='pink')
-    plt.barh(range(1, 25), cleans, left = onsights + flashes + redpoints + pinkpoints, color='xkcd:sky blue')
-    plt.barh(range(1, 25), clean_topropes, left = onsights + flashes + redpoints + pinkpoints + cleans, color='gray')
+    plt.barh(range(1, 25), trad_onsights, color='green')
+    plt.barh(range(1, 25), sport_onsights, left = trad_onsights, color='#98ff98')
+    plt.barh(range(1, 25), trad_flashes, left = trad_onsights + sport_onsights, color='orange')
+    #plt.barh(range(1, 25), sport_flashes, left = trad_onsights + sport_onsights + trad_flashes, color='orange')
+    plt.barh(range(1, 25), trad_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes, color='red')
+    #plt.barh(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
+    plt.barh(range(1, 25), pinkpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints, color='pink')
+    plt.barh(range(1, 25), cleans, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints, color='xkcd:sky blue')
+    plt.barh(range(1, 25), clean_topropes, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + cleans, color='gray')
 
     plt.show()
 
