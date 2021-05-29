@@ -13,6 +13,7 @@ THECRAG_NOT_ON = set(['Attempt', 'Hang dog', 'Retreat', 'Target',
 # are assumed to have involved weighting the rope.
 NOT_ON = THECRAG_NOT_ON.union({'Tick', 'Aid solo', 'Top rope', 'Second'})
 
+BATTLE_TO_TOP = set(['Hang dog', 'Top rope with rest', 'Second with rest'])
 
 def clean_free(ascent_type: str) -> bool:
     """ Returns true if an ascent type is clean and free
@@ -40,6 +41,7 @@ def ysd2ewbanks(grade: str) -> int:
     elif grade == '5.10a': return 18
     elif grade == '5.10b': return 19
     elif grade == '5.10c': return 20
+    elif grade == '5.10d': return 20
     else:
         raise ValueError("Haven't accouned for YSD grade {}".format(grade))
 
@@ -74,11 +76,10 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     """
 
     # Get all clean free ascents (not weighting the rope)
-    df = df[df['Ascent Type'].apply(clean_free)]
+    df = df[df['Ascent Type'].apply(lambda x: clean_free(x) or x in BATTLE_TO_TOP)]
     print("Number of clean ascents: {}".format(len(df)))
 
-    df['Ascent Type'] = pd.Categorical(df['Ascent Type'], ['Onsight', 'Flash', 'Red point', 'Pink point', 'Clean', 'Top Rope onsight', 'Top rope flash', 'Second clean', 'Top rope clean', 'Roped Solo'])
-
+    df['Ascent Type'] = pd.Categorical(df['Ascent Type'], ['Onsight', 'Flash', 'Red point', 'Pink point', 'Clean', 'Top Rope onsight', 'Top rope flash', 'Second clean', 'Top rope clean', 'Roped Solo', 'Hang dog', 'Top rope with rest', 'Second with rest'])
     df = df.sort_values('Ascent Type')
 
     # Temporarily: just removing duplicate routes so we can just plot a pyramid
@@ -131,32 +132,25 @@ def create_stack_chart(df: pd.DataFrame):
     #Groups = np.array([[7, 33, 17, 27],[6, 24, 22, 20],[14, 12, 5, 22], [3, 2, 1, 4], [5, 2, 2, 4]])
     #group_sum = np.array([0, 0])
     counts = dict()
-    tick_types = ['trad_onsights', 'sport_onsight', 'trad_flashes', 'sport_flashes', 'trad_redpoints',
-                  'sport_redpoints', 'pinkpoints', 'cleans', 'clean_seconds', 'clean_topropes']
-    trad_onsights = np.zeros(24)
-    sport_onsights = np.zeros(24)
-    trad_flashes = np.zeros(24)
-    sport_flashes = np.zeros(24)
-    trad_redpoints = np.zeros(24)
-    sport_redpoints = np.zeros(24)
-    pinkpoints = np.zeros(24)
-    cleans = np.zeros(24)
-    clean_seconds = np.zeros(24)
-    clean_topropes = np.zeros(24)
+    tick_types = ['trad_onsights', 'sport_onsights', 'trad_flashes', 'sport_flashes', 'trad_redpoints',
+                  'sport_redpoints', 'pinkpoints', 'cleans', 'clean_seconds', 'clean_topropes',
+                  'battle_to_top']
+    for tick_type in tick_types:
+        counts[tick_type] = np.zeros(24)
     for grade in range(1, 25):
         if grade == 18:
             print(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'])
-        trad_onsights[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'][df['Style'] == 'Trad'])
-        sport_onsights[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'][df['Style'] == 'Sport'])
-        trad_flashes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Flash'][df['Style'] == 'Trad'])
-        sport_flashes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Flash'][df['Style'] == 'Sport'])
-        # TODO need to remove non-unique redbpoints.
-        trad_redpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'][df['Style'] == 'Trad'])
-        sport_redpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'][df['Style'] == 'Sport'])
-        pinkpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Pink point'])
-        cleans[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Clean'])
-        clean_seconds[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Second clean'])])
-        clean_topropes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo'])])
+        counts['trad_onsights'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'][df['Style'] == 'Trad'])
+        counts['sport_onsights'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'][df['Style'] == 'Sport'])
+        counts['trad_flashes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Flash'][df['Style'] == 'Trad'])
+        counts['sport_flashes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Flash'][df['Style'] == 'Sport'])
+        counts['trad_redpoints'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'][df['Style'] == 'Trad'])
+        counts['sport_redpoints'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'][df['Style'] == 'Sport'])
+        counts['pinkpoints'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Pink point'])
+        counts['cleans'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Clean'])
+        counts['clean_seconds'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Second clean'])])
+        counts['clean_topropes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo'])])
+        counts['battle_to_top'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Hang dog', 'Top rope with rest', 'Second with rest'])])
 
 
     fig = plt.figure()
@@ -164,21 +158,27 @@ def create_stack_chart(df: pd.DataFrame):
     major_ticks = np.arange(0, 26)
     ax.set_yticks(major_ticks)
 
-    print(trad_onsights)
-    print(trad_redpoints)
-    print(cleans)
-    print(clean_topropes)
-    plt.barh(range(1, 25), trad_onsights, color='green')
-    plt.barh(range(1, 25), sport_onsights, left = trad_onsights, color='#98ff98')
-    plt.barh(range(1, 25), trad_flashes, left = trad_onsights + sport_onsights, color='#800020')
+    import copy
+    sum_ = copy.copy(counts['trad_onsights'])
+
+    plt.barh(range(1, 25), counts['trad_onsights'], color='green')
+    plt.barh(range(1, 25), counts['sport_onsights'], left = sum_, color='#98ff98')
+    sum_ += counts['sport_onsights']
+    plt.barh(range(1, 25), counts['trad_flashes'], left = sum_, color='#800020')
+    sum_ += counts['trad_flashes']
     #plt.barh(range(1, 25), sport_flashes, left = trad_onsights + sport_onsights + trad_flashes, color='orange')
-    plt.barh(range(1, 25), trad_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes, color='red')
+    plt.barh(range(1, 25), counts['trad_redpoints'], left = sum_, color='red')
+    sum_ += counts['trad_redpoints']
     #plt.barh(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
-    plt.barh(range(1, 25), pinkpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints, color='pink')
-    plt.barh(range(1, 25), cleans, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints, color='xkcd:sky blue')
-    plt.barh(range(1, 25), clean_seconds, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints + cleans, color='#FFA500')
-    plt.barh(range(1, 25), clean_topropes, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints + cleans + clean_seconds, color='#FFFF00')
-    print(trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints)
+    plt.barh(range(1, 25), counts['pinkpoints'], left = sum_, color='pink')
+    sum_ += counts['pinkpoints']
+    plt.barh(range(1, 25), counts['cleans'], left = sum_, color='xkcd:sky blue')
+    sum_ += counts['cleans']
+    plt.barh(range(1, 25), counts['clean_seconds'], left = sum_, color='#FFA500')
+    sum_ += counts['clean_seconds']
+    plt.barh(range(1, 25), counts['clean_topropes'], left = sum_, color='#FFFF00')
+    sum_ += counts['clean_topropes']
+    plt.barh(range(1, 25), counts['battle_to_top'], left = sum_, color='gray')
 
     plt.show()
 

@@ -1,7 +1,6 @@
 - Distinguish between toprope onsights, flashes and toprope cleans
 - distinguish between clean seconds and second flashes (do this by seeing if
   the person has done the route before).
-- Add in non-clean ascents in a very light grey
 - Do timelapse animation
 - Add legend
 - Clean up the code
