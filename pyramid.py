@@ -107,6 +107,10 @@ def create_stack_chart(df: pd.DataFrame):
         clean_topropes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo', 'Second clean'])])
 
 
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    major_ticks = np.arange(0, 26)
+    ax.set_yticks(major_ticks)
 
     print(onsights)
     print(redpoints)
