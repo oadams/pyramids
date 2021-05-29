@@ -138,6 +138,7 @@ def create_stack_chart(df: pd.DataFrame):
     sport_redpoints = np.zeros(24)
     pinkpoints = np.zeros(24)
     cleans = np.zeros(24)
+    clean_seconds = np.zeros(24)
     clean_topropes = np.zeros(24)
     for grade in range(1, 25):
         if grade == 18:
@@ -151,7 +152,8 @@ def create_stack_chart(df: pd.DataFrame):
         sport_redpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'][df['Style'] == 'Sport'])
         pinkpoints[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Pink point'])
         cleans[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Clean'])
-        clean_topropes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo', 'Second clean'])])
+        clean_seconds[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Second clean'])])
+        clean_topropes[grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo'])])
 
 
     fig = plt.figure()
@@ -171,7 +173,8 @@ def create_stack_chart(df: pd.DataFrame):
     #plt.barh(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
     plt.barh(range(1, 25), pinkpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints, color='pink')
     plt.barh(range(1, 25), cleans, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints, color='xkcd:sky blue')
-    plt.barh(range(1, 25), clean_topropes, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints + cleans, color='gray')
+    plt.barh(range(1, 25), clean_seconds, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints + cleans, color='black')
+    plt.barh(range(1, 25), clean_topropes, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints + cleans + clean_seconds, color='gray')
     print(trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints)
 
     plt.show()
