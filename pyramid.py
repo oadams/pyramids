@@ -130,6 +130,9 @@ def create_stack_chart(df: pd.DataFrame):
 
     #Groups = np.array([[7, 33, 17, 27],[6, 24, 22, 20],[14, 12, 5, 22], [3, 2, 1, 4], [5, 2, 2, 4]])
     #group_sum = np.array([0, 0])
+    counts = dict()
+    tick_types = ['trad_onsights', 'sport_onsight', 'trad_flashes', 'sport_flashes', 'trad_redpoints',
+                  'sport_redpoints', 'pinkpoints', 'cleans', 'clean_seconds', 'clean_topropes']
     trad_onsights = np.zeros(24)
     sport_onsights = np.zeros(24)
     trad_flashes = np.zeros(24)
@@ -167,14 +170,14 @@ def create_stack_chart(df: pd.DataFrame):
     print(clean_topropes)
     plt.barh(range(1, 25), trad_onsights, color='green')
     plt.barh(range(1, 25), sport_onsights, left = trad_onsights, color='#98ff98')
-    plt.barh(range(1, 25), trad_flashes, left = trad_onsights + sport_onsights, color='orange')
+    plt.barh(range(1, 25), trad_flashes, left = trad_onsights + sport_onsights, color='#800020')
     #plt.barh(range(1, 25), sport_flashes, left = trad_onsights + sport_onsights + trad_flashes, color='orange')
     plt.barh(range(1, 25), trad_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes, color='red')
     #plt.barh(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
     plt.barh(range(1, 25), pinkpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints, color='pink')
     plt.barh(range(1, 25), cleans, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints, color='xkcd:sky blue')
-    plt.barh(range(1, 25), clean_seconds, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints + cleans, color='black')
-    plt.barh(range(1, 25), clean_topropes, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints + cleans + clean_seconds, color='gray')
+    plt.barh(range(1, 25), clean_seconds, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints + cleans, color='#FFA500')
+    plt.barh(range(1, 25), clean_topropes, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints + cleans + clean_seconds, color='#FFFF00')
     print(trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints + sport_redpoints + pinkpoints)
 
     plt.show()
