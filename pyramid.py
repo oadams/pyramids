@@ -1,4 +1,5 @@
 import argparse
+import copy
 from typing import List
 
 import pandas as pd # type: ignore
@@ -15,6 +16,7 @@ NOT_ON = THECRAG_NOT_ON.union({'Tick', 'Aid solo', 'Top rope', 'Second'})
 
 BATTLE_TO_TOP = set(['Hang dog', 'Top rope with rest', 'Second with rest'])
 
+
 def clean_free(ascent_type: str) -> bool:
     """ Returns true if an ascent type is clean and free
         - Clean: The rope was not weighted (toproping is acceptable)
@@ -25,23 +27,33 @@ def clean_free(ascent_type: str) -> bool:
 
 def is_ysd(ascent_grade: str) -> bool:
     """ Indicates whether a grade formatted in Yosemite Decimal System. """
-    if ascent_grade.startswith('5.'):
+    if str(ascent_grade).startswith('5.'):
         return True
     else:
         return False
 
+
 def ysd2ewbanks(grade: str) -> int:
     """ Convert a grade from Yosemite Decimal System to Ewbanks. """
 
-    if grade == '5.5': return 12
-    elif grade == '5.6': return 13
-    elif grade == '5.7': return 14
-    elif grade == '5.8': return 15
-    elif grade == '5.9': return 17
-    elif grade == '5.10a': return 18
-    elif grade == '5.10b': return 19
-    elif grade == '5.10c': return 20
-    elif grade == '5.10d': return 20
+    if grade == '5.5':
+        return 12
+    elif grade == '5.6':
+        return 13
+    elif grade == '5.7':
+        return 14
+    elif grade == '5.8':
+        return 15
+    elif grade == '5.9':
+        return 17
+    elif grade == '5.10a':
+        return 18
+    elif grade == '5.10b':
+        return 19
+    elif grade == '5.10c':
+        return 20
+    elif grade == '5.10d':
+        return 20
     else:
         raise ValueError("Haven't accouned for YSD grade {}".format(grade))
 
@@ -56,17 +68,25 @@ def is_ewbanks(ascent_grade: str) -> bool:
     else:
         return True
 
+
 def is_ewbanks_or_ysd(ascent_grade: str) -> bool:
     return is_ewbanks(ascent_grade) or is_ysd(ascent_grade)
 
 
 def classify_style(crag_path: str) -> str:
-    if 'Arapiles' in crag_path: return 'Trad'
-    elif 'Bad Moon Rising Wall' in crag_path: return 'Trad'
-    elif 'Taipan Wall' in crag_path: return 'Trad'
-    elif 'The Green Wall' in crag_path: return 'Trad'
-    elif 'Mt Stapylton Amphitheatre - Central Buttress' in crag_path: return 'Trad'
-    elif 'Summerday Valley' in crag_path: return 'Trad'
+
+    if 'Arapiles' in crag_path:
+        return 'Trad'
+    elif 'Bad Moon Rising Wall' in crag_path:
+        return 'Trad'
+    elif 'Taipan Wall' in crag_path:
+        return 'Trad'
+    elif 'The Green Wall' in crag_path:
+        return 'Trad'
+    elif 'Mt Stapylton Amphitheatre - Central Buttress' in crag_path:
+        return 'Trad'
+    elif 'Summerday Valley' in crag_path:
+        return 'Trad'
     else:
         return 'Sport'
 
@@ -82,13 +102,7 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], ['Onsight', 'Flash', 'Red point', 'Pink point', 'Clean', 'Top Rope onsight', 'Top rope flash', 'Second clean', 'Top rope clean', 'Roped Solo', 'Hang dog', 'Top rope with rest', 'Second with rest'])
     df = df.sort_values('Ascent Type')
 
-    # Temporarily: just removing duplicate routes so we can just plot a pyramid
-    # for clean ascents. When we want to plot different ascent types with
-    # different colours, this will break down because it might not choose the
-    # best ascent type (e.g. it might prune out a flash in favour of a
-    # red-point. # TODO handle choosing the best ascent type
     df = df.drop_duplicates(['Route ID'])
-    # TODO Remove repeats by taking the best ascent.
 
     df['Style'] = df['Crag Path'].apply(lambda x: classify_style(x))
 
@@ -152,35 +166,33 @@ def create_stack_chart(df: pd.DataFrame):
         counts['clean_topropes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo'])])
         counts['battle_to_top'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Hang dog', 'Top rope with rest', 'Second with rest'])])
 
-
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
     major_ticks = np.arange(0, 26)
     ax.set_yticks(major_ticks)
 
-    import copy
     sum_ = copy.copy(counts['trad_onsights'])
 
     plt.barh(range(1, 25), counts['trad_onsights'], color='green', label='Trad onsight')
-    plt.barh(range(1, 25), counts['sport_onsights'], left = sum_, color='#98ff98', label='Sport onsight')
+    plt.barh(range(1, 25), counts['sport_onsights'], left=sum_, color='#98ff98', label='Sport onsight')
     sum_ += counts['sport_onsights']
-    plt.barh(range(1, 25), counts['trad_flashes'], left = sum_, color='#800020', label='Trad flash')
+    plt.barh(range(1, 25), counts['trad_flashes'], left=sum_, color='#800020', label='Trad flash')
     sum_ += counts['trad_flashes']
     #plt.barh(range(1, 25), sport_flashes, left = trad_onsights + sport_onsights + trad_flashes, color='orange')
-    plt.barh(range(1, 25), counts['trad_redpoints'], left = sum_, color='red', label='Trad redpoint')
+    plt.barh(range(1, 25), counts['trad_redpoints'], left=sum_, color='red', label='Trad redpoint')
     sum_ += counts['trad_redpoints']
     #plt.barh(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
-    plt.barh(range(1, 25), counts['pinkpoints'], left = sum_, color='pink', label='Pinkpoint (sport or trad)')
+    plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='pink', label='Pinkpoint (sport or trad)')
     sum_ += counts['pinkpoints']
-    plt.barh(range(1, 25), counts['cleans'], left = sum_, color='xkcd:sky blue', label='Clean lead (yoyo, simulclimbing)')
+    plt.barh(range(1, 25), counts['cleans'], left=sum_, color='xkcd:sky blue', label='Clean lead (yoyo, simulclimbing)')
     sum_ += counts['cleans']
-    plt.barh(range(1, 25), counts['clean_seconds'], left = sum_, color='#FFA500', label='Clean second')
+    plt.barh(range(1, 25), counts['clean_seconds'], left=sum_, color='#FFA500', label='Clean second')
     sum_ += counts['clean_seconds']
-    plt.barh(range(1, 25), counts['clean_topropes'], left = sum_, color='#FFFF00', label='Clean toprope')
+    plt.barh(range(1, 25), counts['clean_topropes'], left=sum_, color='#FFFF00', label='Clean toprope')
     sum_ += counts['clean_topropes']
-    plt.barh(range(1, 25), counts['battle_to_top'], left = sum_, color='gray', label='Battle to top (hangdog, second/toprope weighting rope)')
+    plt.barh(range(1, 25), counts['battle_to_top'], left=sum_, color='gray', label='Battle to top (hangdog, second/toprope weighting rope)')
 
-    leg = ax.legend(loc='center', bbox_to_anchor=(0.5, -0.10), shadow=False, ncol=2)
+    _ = ax.legend(loc='center', bbox_to_anchor=(0.5, -0.10), shadow=False, ncol=2)
 
     plt.show()
 
