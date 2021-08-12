@@ -211,21 +211,20 @@ def create_stack_chart(df: pd.DataFrame):
     #artists.append([ab])
     #ax.add_artist(ab)
     #ax.imshow(photo)
-    ax2 = fig.add_axes([0.15, 0.1, 0.7, 0.3])
+    ax2 = fig.add_axes([0.3, 0.2, 0.7, 0.3])
     ims = []
     im = ax2.imshow(photo)
     ims.append([im])
     photo = mpimg.imread('animation/photos/20210511_131111.jpg')
     photo = ndimage.rotate(photo, -90)
-    im = ax2.imshow(photo)
+    im = ax2.imshow(photo, animated=True)
     ims.append([im])
     print(ims)
 
 
     #import pdb; pdb.set_trace()
 
-    ani = animation.ArtistAnimation(fig, ims, interval=3050, blit=True,
-                                repeat_delay=1000)
+    ani = animation.ArtistAnimation(fig, ims, interval=3050, blit=True)
 
     """
     def prep_anim(ab):
