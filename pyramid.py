@@ -165,7 +165,7 @@ def create_stack_chart(df: pd.DataFrame):
         counts['clean_topropes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo'])])
         counts['battle_to_top'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Hang dog', 'Top rope with rest', 'Second with rest'])])
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(15,10))
     ax = fig.add_subplot(1, 1, 1)
     major_ticks = np.arange(0, 26)
     ax.set_yticks(major_ticks)
@@ -193,8 +193,6 @@ def create_stack_chart(df: pd.DataFrame):
 
     _ = ax.legend(loc='center', bbox_to_anchor=(0.5, -0.10), shadow=False, ncol=2)
 
-
-
     # Insert an image
     import matplotlib.image as mpimg
     from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage, AnnotationBbox
@@ -202,7 +200,7 @@ def create_stack_chart(df: pd.DataFrame):
     photo = mpimg.imread('animation/photos/20210704_160700.jpg')
     photo = ndimage.rotate(photo, -90)
     imagebox = OffsetImage(photo, zoom=0.1)
-    ab = AnnotationBbox(imagebox, (8, 2))
+    ab = AnnotationBbox(imagebox, (8, 7))
     ax.add_artist(ab)
 
     plt.show()
