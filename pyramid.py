@@ -2,6 +2,7 @@ import argparse
 import copy
 from typing import List
 
+import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd # type: ignore
@@ -197,11 +198,52 @@ def create_stack_chart(df: pd.DataFrame):
     import matplotlib.image as mpimg
     from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage, AnnotationBbox
     from scipy import ndimage
+    artists = []
     photo = mpimg.imread('animation/photos/20210704_160700.jpg')
     photo = ndimage.rotate(photo, -90)
     imagebox = OffsetImage(photo, zoom=0.1)
     ab = AnnotationBbox(imagebox, (8, 7))
-    ax.add_artist(ab)
+    artists.append([ab])
+    #photo = mpimg.imread('animation/photos/20210511_131111.jpg')
+    #photo = ndimage.rotate(photo, -90)
+    #imagebox = OffsetImage(photo, zoom=0.1)
+    #ab = AnnotationBbox(imagebox, (8, 7))
+    #artists.append([ab])
+    #ax.add_artist(ab)
+    #ax.imshow(photo)
+    ax2 = fig.add_axes([0.15, 0.1, 0.7, 0.3])
+    ims = []
+    im = ax2.imshow(photo)
+    ims.append([im])
+    photo = mpimg.imread('animation/photos/20210511_131111.jpg')
+    photo = ndimage.rotate(photo, -90)
+    im = ax2.imshow(photo)
+    ims.append([im])
+    print(ims)
+
+
+    #import pdb; pdb.set_trace()
+
+    ani = animation.ArtistAnimation(fig, ims, interval=3050, blit=True,
+                                repeat_delay=1000)
+
+    """
+    def prep_anim(ab):
+        def animate(frame_number):
+            photo = mpimg.imread('animation/photos/20210511_131111.jpg')
+            photo = ndimage.rotate(photo, -90)
+            imagebox2 = OffsetImage(photo, zoom=0.1)
+            ab.offsetbox = imagebox2
+            #photo = mpimg.imread('animation/photos/20210511_131111.jpg')
+            #imagebox.set_data(photo)
+            #print(imagebox._data)
+            #print('ok')
+            #imagebox.draw()
+            return ab
+        return animate
+
+    ani = animation.FuncAnimation(fig, prep_anim(ab), repeat=False, interval=2222, blit=True)
+    """
 
     plt.show()
 
