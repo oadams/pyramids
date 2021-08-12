@@ -2,6 +2,8 @@ import argparse
 import copy
 from typing import List
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd # type: ignore
 import plotnine as p9 # type: ignore
 
@@ -140,9 +142,6 @@ def create_stack_chart(df: pd.DataFrame):
     plt.show()
     """
 
-    import matplotlib.pyplot as plt
-    import numpy as np
-
     #Groups = np.array([[7, 33, 17, 27],[6, 24, 22, 20],[14, 12, 5, 22], [3, 2, 1, 4], [5, 2, 2, 4]])
     #group_sum = np.array([0, 0])
     counts = dict()
@@ -194,7 +193,23 @@ def create_stack_chart(df: pd.DataFrame):
 
     _ = ax.legend(loc='center', bbox_to_anchor=(0.5, -0.10), shadow=False, ncol=2)
 
+
+
+    # Insert an image
+    import matplotlib.image as mpimg
+    from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage, AnnotationBbox
+    from scipy import ndimage
+    photo = mpimg.imread('animation/photos/20210704_160700.jpg')
+    photo = ndimage.rotate(photo, -90)
+    imagebox = OffsetImage(photo, zoom=0.1)
+    ab = AnnotationBbox(imagebox, (8, 2))
+    ax.add_artist(ab)
+
     plt.show()
+
+
+def create_animation(df):
+    print(df.sort_values(['Ascent Date']))
 
 
 parser = argparse.ArgumentParser()
@@ -205,7 +220,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     df = pd.read_csv(args.csv)
     df = prepare_df(df)
-    print(set(df['Ascent Type']))
-    plots = create_plots(df)
-    p9.save_as_pdf_pages(plots, filename='plot2.pdf')
+    #plots = create_plots(df)
+    #p9.save_as_pdf_pages(plots, filename='plot2.pdf')
     create_stack_chart(df)
+    #create_animation(df)
