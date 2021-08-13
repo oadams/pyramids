@@ -261,9 +261,11 @@ def create_story(df: pd.DataFrame):
     ax = fig.add_subplot(1, 1, 1)
     major_ticks = np.arange(0, 26)
     ax.set_yticks(major_ticks)
+    ax.set_xticks(major_ticks)
+    ax.set_xlim(left=0, right=25)
 
     #counts = get_ascent_counts(df.iloc[:3])
-    counts = get_ascent_counts(df.iloc[:5])
+    counts = get_ascent_counts(df.iloc[:0])
     sum_ = copy.copy(counts['trad_onsights'])
     trad_onsights_barh = plt.barh(range(1, 25), counts['trad_onsights'], color='green', label='Trad onsight')
     sport_onsights_barh = plt.barh(range(1, 25), counts['sport_onsights'], left=sum_, color='#98ff98', label='Sport onsight')
@@ -317,6 +319,8 @@ def create_story(df: pd.DataFrame):
             sum_ += counts['clean_topropes']
             battle_to_top_barh_new = plt.barh(range(1, 25), counts['battle_to_top'], left=sum_, color='gray', label='Battle to top (hangdog, second/toprope weighting rope)')
             battle_to_top_barh.patches = battle_to_top_barh_new.patches
+            if frame_number > 0:
+                ax.set_title(f'{df.iloc[frame_number-1]["Ascent Label"]}')
         return animate
 
     ani = animation.FuncAnimation(fig, prepare_animation(trad_onsights_barh), repeat=False, interval=1000)
