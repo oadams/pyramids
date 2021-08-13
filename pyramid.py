@@ -294,14 +294,14 @@ def create_story(df: pd.DataFrame):
     ab = AnnotationBbox(imagebox, (8, 7))
     photo_map = {
         'Start': mpimg.imread('animation/photos/20210509_092007.jpg'),
-        'Cloaca': mpimg.imread('animation/photos/20210511_131111.jpg'),
+        'Cloaca': ndimage.rotate(mpimg.imread('animation/photos/20210511_131111.jpg'), -90),
         'Scarlet Sage': mpimg.imread('animation/photos/Screen Shot 2021-08-12 at 4.42.46 PM.png'),
-        'Diapason': mpimg.imread('animation/photos/20210511_155128.jpg'),
+        'Diapason': ndimage.rotate(mpimg.imread('animation/photos/20210511_155128.jpg'), -90),
         'Diapason2': mpimg.imread('animation/photos/20210511_155129.jpg'),
-        'Tiptoe Ridge': mpimg.imread('animation/photos/20210512_090702.jpg'),
-        'Piccolo': mpimg.imread('animation/photos/20210513_113415.jpg'),
+        'Tiptoe Ridge': ndimage.rotate(mpimg.imread('animation/photos/20210512_090702.jpg'), -90),
+        'Piccolo': ndimage.rotate(mpimg.imread('animation/photos/20210513_113415.jpg'), -90),
         'Piccolo2': mpimg.imread('animation/photos/20210513_113643.jpg'),
-        'Mantle': mpimg.imread('animation/photos/20210704_133931.jpg'),
+        'Mantle': ndimage.rotate(mpimg.imread('animation/photos/20210704_133931.jpg'), -90),
         'Mantle2': mpimg.imread('animation/photos/20210704_160639(0).jpg'),
         'Mantle3': mpimg.imread('animation/photos/20210704_160700.jpg')
     }
@@ -332,6 +332,9 @@ def create_story(df: pd.DataFrame):
     """
 
     ax2 = fig.add_axes([0.3, 0.2, 0.7, 0.3])
+    ax2.tick_params(left=False,
+                    bottom=False)
+    ax2.set(xticklabels=[], yticklabels=[])
     ax2.imshow(photo_map['Start'])
 
     def prepare_animation(trad_onsights_barh):
