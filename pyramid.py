@@ -254,7 +254,8 @@ def create_stack_chart(df: pd.DataFrame):
 
 def create_story(df: pd.DataFrame):
 
-    df = df[df['Ascent Type'] == 'Onsight'][df['Style'] == 'Trad'].sort_values('Ascent Date')
+    #df = df[df['Ascent Type'] == 'Onsight'][df['Style'] == 'Trad'].sort_values('Ascent Date')
+    df = df.sort_values('Ascent Date')
 
     fig = plt.figure(figsize=(15,10))
     ax = fig.add_subplot(1, 1, 1)
@@ -263,7 +264,25 @@ def create_story(df: pd.DataFrame):
 
     #counts = get_ascent_counts(df.iloc[:3])
     counts = get_ascent_counts(df.iloc[:5])
+    sum_ = copy.copy(counts['trad_onsights'])
     trad_onsights_barh = plt.barh(range(1, 25), counts['trad_onsights'], color='green', label='Trad onsight')
+    sport_onsights_barh = plt.barh(range(1, 25), counts['sport_onsights'], left=sum_, color='#98ff98', label='Sport onsight')
+    sum_ += counts['sport_onsights']
+    trad_flashes_barh = plt.barh(range(1, 25), counts['trad_flashes'], left=sum_, color='#800020', label='Trad flash')
+    sum_ += counts['trad_flashes']
+    #plt.barh(range(1, 25), sport_flashes, left = trad_onsights + sport_onsights + trad_flashes, color='orange')
+    trad_redpoints_barh = plt.barh(range(1, 25), counts['trad_redpoints'], left=sum_, color='red', label='Trad redpoint')
+    sum_ += counts['trad_redpoints']
+    #plt.barh(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
+    pinkpoints_barh = plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='pink', label='Pinkpoint (sport or trad)')
+    sum_ += counts['pinkpoints']
+    cleans_barh = plt.barh(range(1, 25), counts['cleans'], left=sum_, color='xkcd:sky blue', label='Clean lead (yoyo, simulclimbing)')
+    sum_ += counts['cleans']
+    clean_seconds_barh = plt.barh(range(1, 25), counts['clean_seconds'], left=sum_, color='#FFA500', label='Clean second')
+    sum_ += counts['clean_seconds']
+    clean_topropes_barh = plt.barh(range(1, 25), counts['clean_topropes'], left=sum_, color='#FFFF00', label='Clean toprope')
+    sum_ += counts['clean_topropes']
+    battle_to_top_barh = plt.barh(range(1, 25), counts['battle_to_top'], left=sum_, color='gray', label='Battle to top (hangdog, second/toprope weighting rope)')
 
     def prepare_animation(trad_onsights_barh):
         def animate(frame_number):
@@ -272,6 +291,32 @@ def create_story(df: pd.DataFrame):
             print(counts)
             trad_onsights_barh_new = plt.barh(range(1, 25), counts['trad_onsights'], color='green', label='Trad onsight')
             trad_onsights_barh.patches = trad_onsights_barh_new.patches
+            sum_ = copy.copy(counts['trad_onsights'])
+            sport_onsights_barh_new = plt.barh(range(1, 25), counts['sport_onsights'], left=sum_, color='#98ff98', label='Sport onsight')
+            sport_onsights_barh.patches = sport_onsights_barh_new.patches
+            sum_ += counts['sport_onsights']
+            trad_flashes_barh_new = plt.barh(range(1, 25), counts['trad_flashes'], left=sum_, color='#800020', label='Trad flash')
+            trad_flashes_barh.patches = trad_flashes_barh_new.patches
+            sum_ += counts['trad_flashes']
+            #plt.barh_new(range(1, 25), sport_flashes, left = trad_onsights + sport_onsights + trad_flashes, color='orange')
+            trad_redpoints_barh_new = plt.barh(range(1, 25), counts['trad_redpoints'], left=sum_, color='red', label='Trad redpoint')
+            trad_redpoints_barh.patches = trad_redpoints_barh_new.patches
+            sum_ += counts['trad_redpoints']
+            #plt.barh_new(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
+            pinkpoints_barh_new = plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='pink', label='Pinkpoint (sport or trad)')
+            pinkpoints_barh.patches = pinkpoints_barh_new.patches
+            sum_ += counts['pinkpoints']
+            cleans_barh_new = plt.barh(range(1, 25), counts['cleans'], left=sum_, color='xkcd:sky blue', label='Clean lead (yoyo, simulclimbing)')
+            cleans_barh.patches = cleans_barh_new.patches
+            sum_ += counts['cleans']
+            clean_seconds_barh_new = plt.barh(range(1, 25), counts['clean_seconds'], left=sum_, color='#FFA500', label='Clean second')
+            clean_seconds_barh.patches = clean_seconds_barh_new.patches
+            sum_ += counts['clean_seconds']
+            clean_topropes_barh_new = plt.barh(range(1, 25), counts['clean_topropes'], left=sum_, color='#FFFF00', label='Clean toprope')
+            clean_topropes_barh.patches = clean_topropes_barh_new.patches
+            sum_ += counts['clean_topropes']
+            battle_to_top_barh_new = plt.barh(range(1, 25), counts['battle_to_top'], left=sum_, color='gray', label='Battle to top (hangdog, second/toprope weighting rope)')
+            battle_to_top_barh.patches = battle_to_top_barh_new.patches
         return animate
 
     ani = animation.FuncAnimation(fig, prepare_animation(trad_onsights_barh), repeat=False, interval=1000)
