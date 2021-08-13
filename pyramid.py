@@ -129,20 +129,7 @@ def create_plots(df: pd.DataFrame) -> List[p9.ggplot]:
     return plots
 
 
-def create_stack_chart(df: pd.DataFrame):
-    """
-    import numpy as np
-    import pandas as pd
-    from pandas import Series, DataFrame
-    import matplotlib.pyplot as plt
-
-    data1 = [23,85, 72, 43, 52]
-    data2 = [42, 35, 21, 16, 9]
-    plt.bar(range(len(data1)), data1)
-    plt.bar(range(len(data2)), data2, bottom=data1)
-    plt.show()
-    """
-
+def get_ascent_counts(df: pd.DataFrame):
     #Groups = np.array([[7, 33, 17, 27],[6, 24, 22, 20],[14, 12, 5, 22], [3, 2, 1, 4], [5, 2, 2, 4]])
     #group_sum = np.array([0, 0])
     counts = dict()
@@ -165,6 +152,24 @@ def create_stack_chart(df: pd.DataFrame):
         counts['clean_seconds'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Second clean'])])
         counts['clean_topropes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo'])])
         counts['battle_to_top'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Hang dog', 'Top rope with rest', 'Second with rest'])])
+    return counts
+
+
+def create_stack_chart(df: pd.DataFrame):
+    """
+    import numpy as np
+    import pandas as pd
+    from pandas import Series, DataFrame
+    import matplotlib.pyplot as plt
+
+    data1 = [23,85, 72, 43, 52]
+    data2 = [42, 35, 21, 16, 9]
+    plt.bar(range(len(data1)), data1)
+    plt.bar(range(len(data2)), data2, bottom=data1)
+    plt.show()
+    """
+
+    counts = get_ascent_counts(df)
 
     fig = plt.figure(figsize=(15,10))
     ax = fig.add_subplot(1, 1, 1)
@@ -247,8 +252,31 @@ def create_stack_chart(df: pd.DataFrame):
     plt.show()
 
 
-def create_animation(df):
-    print(df.sort_values(['Ascent Date']))
+def create_story(df: pd.DataFrame):
+
+    df = df[df['Ascent Type'] == 'Onsight'][df['Style'] == 'Trad'].sort_values('Ascent Date')
+
+    fig = plt.figure(figsize=(15,10))
+    ax = fig.add_subplot(1, 1, 1)
+    major_ticks = np.arange(0, 26)
+    ax.set_yticks(major_ticks)
+
+    #counts = get_ascent_counts(df.iloc[:3])
+    counts = get_ascent_counts(df.iloc[:5])
+    trad_onsights_barh = plt.barh(range(1, 25), counts['trad_onsights'], color='green', label='Trad onsight')
+
+    def prepare_animation(trad_onsights_barh):
+        def animate(frame_number):
+            print(frame_number)
+            counts = get_ascent_counts(df.iloc[:frame_number])
+            print(counts)
+            trad_onsights_barh_new = plt.barh(range(1, 25), counts['trad_onsights'], color='green', label='Trad onsight')
+            trad_onsights_barh.patches = trad_onsights_barh_new.patches
+        return animate
+
+    ani = animation.FuncAnimation(fig, prepare_animation(trad_onsights_barh), repeat=False, interval=1000)
+
+    plt.show()
 
 
 parser = argparse.ArgumentParser()
@@ -261,5 +289,5 @@ if __name__ == '__main__':
     df = prepare_df(df)
     #plots = create_plots(df)
     #p9.save_as_pdf_pages(plots, filename='plot2.pdf')
-    create_stack_chart(df)
-    #create_animation(df)
+    #create_stack_chart(df)
+    create_story(df)
