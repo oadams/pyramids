@@ -227,8 +227,6 @@ def create_stack_chart(df: pd.DataFrame):
     print(ims)
 
 
-    #import pdb; pdb.set_trace()
-
     ani = animation.ArtistAnimation(fig, ims, interval=3050, blit=True)
 
     """
@@ -286,44 +284,100 @@ def create_story(df: pd.DataFrame):
     sum_ += counts['clean_topropes']
     battle_to_top_barh = plt.barh(range(1, 25), counts['battle_to_top'], left=sum_, color='gray', label='Battle to top (hangdog, second/toprope weighting rope)')
 
+    import matplotlib.image as mpimg
+    from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage, AnnotationBbox
+    from scipy import ndimage
+    artists = []
+    photo = mpimg.imread('animation/photos/20210704_160700.jpg')
+    photo = ndimage.rotate(photo, -90)
+    imagebox = OffsetImage(photo, zoom=0.1)
+    ab = AnnotationBbox(imagebox, (8, 7))
+    photo_map = {
+        'Start': mpimg.imread('animation/photos/20210509_092007.jpg'),
+        'Cloaca': mpimg.imread('animation/photos/20210511_131111.jpg'),
+        'Scarlet Sage': mpimg.imread('animation/photos/Screen Shot 2021-08-12 at 4.42.46 PM.png'),
+        'Diapason': mpimg.imread('animation/photos/20210511_155128.jpg'),
+        'Diapason2': mpimg.imread('animation/photos/20210511_155129.jpg'),
+        'Tiptoe Ridge': mpimg.imread('animation/photos/20210512_090702.jpg'),
+        'Piccolo': mpimg.imread('animation/photos/20210513_113415.jpg'),
+        'Piccolo2': mpimg.imread('animation/photos/20210513_113643.jpg'),
+        'Mantle': mpimg.imread('animation/photos/20210704_133931.jpg'),
+        'Mantle2': mpimg.imread('animation/photos/20210704_160639(0).jpg'),
+        'Mantle3': mpimg.imread('animation/photos/20210704_160700.jpg')
+    }
+    df['photo'] = df.apply(lambda x: photo_map[x['Ascent Label']] if x['Ascent Label'] in photo_map else None, axis=1)
+    """
+    artists.append([ab])
+    #photo = mpimg.imread('animation/photos/20210511_131111.jpg')
+    #photo = ndimage.rotate(photo, -90)
+    #imagebox = OffsetImage(photo, zoom=0.1)
+    #ab = AnnotationBbox(imagebox, (8, 7))
+    #artists.append([ab])
+    #ax.add_artist(ab)
+    #ax.imshow(photo)
+    ax2 = fig.add_axes([0.3, 0.2, 0.7, 0.3])
+    ims = []
+    im = ax2.imshow(photo)
+    ims.append([im])
+    photo = mpimg.imread('animation/photos/20210511_131111.jpg')
+    photo = ndimage.rotate(photo, -90)
+    im = ax2.imshow(photo, animated=True)
+    ims.append([im])
+    print(ims)
+
+
+
+
+    ani = animation.ArtistAnimation(fig, ims, interval=1000, blit=True)
+    """
+
+    ax2 = fig.add_axes([0.3, 0.2, 0.7, 0.3])
+    ax2.imshow(photo_map['Start'])
+
     def prepare_animation(trad_onsights_barh):
         def animate(frame_number):
+            photo = df.iloc[frame_number-1].photo
+            if photo is not None:
+                print(photo)
+                ax2.imshow(photo)
             print(frame_number)
             counts = get_ascent_counts(df.iloc[:frame_number])
             print(counts)
-            trad_onsights_barh_new = plt.barh(range(1, 25), counts['trad_onsights'], color='green', label='Trad onsight')
+            trad_onsights_barh_new = ax.barh(range(1, 25), counts['trad_onsights'], color='green', label='Trad onsight')
             trad_onsights_barh.patches = trad_onsights_barh_new.patches
             sum_ = copy.copy(counts['trad_onsights'])
-            sport_onsights_barh_new = plt.barh(range(1, 25), counts['sport_onsights'], left=sum_, color='#98ff98', label='Sport onsight')
+            sport_onsights_barh_new = ax.barh(range(1, 25), counts['sport_onsights'], left=sum_, color='#98ff98', label='Sport onsight')
             sport_onsights_barh.patches = sport_onsights_barh_new.patches
             sum_ += counts['sport_onsights']
-            trad_flashes_barh_new = plt.barh(range(1, 25), counts['trad_flashes'], left=sum_, color='#800020', label='Trad flash')
+            trad_flashes_barh_new = ax.barh(range(1, 25), counts['trad_flashes'], left=sum_, color='#800020', label='Trad flash')
             trad_flashes_barh.patches = trad_flashes_barh_new.patches
             sum_ += counts['trad_flashes']
-            #plt.barh_new(range(1, 25), sport_flashes, left = trad_onsights + sport_onsights + trad_flashes, color='orange')
-            trad_redpoints_barh_new = plt.barh(range(1, 25), counts['trad_redpoints'], left=sum_, color='red', label='Trad redpoint')
+            #ax.barh_new(range(1, 25), sport_flashes, left = trad_onsights + sport_onsights + trad_flashes, color='orange')
+            trad_redpoints_barh_new = ax.barh(range(1, 25), counts['trad_redpoints'], left=sum_, color='red', label='Trad redpoint')
             trad_redpoints_barh.patches = trad_redpoints_barh_new.patches
             sum_ += counts['trad_redpoints']
-            #plt.barh_new(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
-            pinkpoints_barh_new = plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='pink', label='Pinkpoint (sport or trad)')
+            #ax.barh_new(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
+            pinkpoints_barh_new = ax.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='pink', label='Pinkpoint (sport or trad)')
             pinkpoints_barh.patches = pinkpoints_barh_new.patches
             sum_ += counts['pinkpoints']
-            cleans_barh_new = plt.barh(range(1, 25), counts['cleans'], left=sum_, color='xkcd:sky blue', label='Clean lead (yoyo, simulclimbing)')
+            cleans_barh_new = ax.barh(range(1, 25), counts['cleans'], left=sum_, color='xkcd:sky blue', label='Clean lead (yoyo, simulclimbing)')
             cleans_barh.patches = cleans_barh_new.patches
             sum_ += counts['cleans']
-            clean_seconds_barh_new = plt.barh(range(1, 25), counts['clean_seconds'], left=sum_, color='#FFA500', label='Clean second')
+            clean_seconds_barh_new = ax.barh(range(1, 25), counts['clean_seconds'], left=sum_, color='#FFA500', label='Clean second')
             clean_seconds_barh.patches = clean_seconds_barh_new.patches
             sum_ += counts['clean_seconds']
-            clean_topropes_barh_new = plt.barh(range(1, 25), counts['clean_topropes'], left=sum_, color='#FFFF00', label='Clean toprope')
+            clean_topropes_barh_new = ax.barh(range(1, 25), counts['clean_topropes'], left=sum_, color='#FFFF00', label='Clean toprope')
             clean_topropes_barh.patches = clean_topropes_barh_new.patches
             sum_ += counts['clean_topropes']
-            battle_to_top_barh_new = plt.barh(range(1, 25), counts['battle_to_top'], left=sum_, color='gray', label='Battle to top (hangdog, second/toprope weighting rope)')
+            battle_to_top_barh_new = ax.barh(range(1, 25), counts['battle_to_top'], left=sum_, color='gray', label='Battle to top (hangdog, second/toprope weighting rope)')
             battle_to_top_barh.patches = battle_to_top_barh_new.patches
             if frame_number > 0:
-                ax.set_title(f'{df.iloc[frame_number-1]["Ascent Label"]}')
+                ax.set_title(f'{df.iloc[frame_number-1]["Ascent Label"]}', fontsize=40)
+
         return animate
 
     ani = animation.FuncAnimation(fig, prepare_animation(trad_onsights_barh), repeat=False, interval=1000)
+
 
     plt.show()
 
