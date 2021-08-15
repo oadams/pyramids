@@ -295,7 +295,7 @@ def create_story(df: pd.DataFrame):
     photo_map = {
         'Start': mpimg.imread('animation/photos/20210509_092007.jpg'),
         'Cloaca': ndimage.rotate(mpimg.imread('animation/photos/20210511_131111.jpg'), -90),
-        'Scarlet Sage': mpimg.imread('animation/photos/Screen Shot 2021-08-12 at 4.42.46 PM.png'),
+        'ScarIet Sage': mpimg.imread('animation/photos/scarlet_sage.png'),
         'Diapason': ndimage.rotate(mpimg.imread('animation/photos/20210511_155128.jpg'), -90),
         'Diapason2': mpimg.imread('animation/photos/20210511_155129.jpg'),
         'Tiptoe Ridge': ndimage.rotate(mpimg.imread('animation/photos/20210512_090702.jpg'), -90),
@@ -306,6 +306,7 @@ def create_story(df: pd.DataFrame):
         'Mantle3': mpimg.imread('animation/photos/20210704_160700.jpg')
     }
     df['photo'] = df.apply(lambda x: photo_map[x['Ascent Label']] if x['Ascent Label'] in photo_map else None, axis=1)
+
     """
     artists.append([ab])
     #photo = mpimg.imread('animation/photos/20210511_131111.jpg')
@@ -331,18 +332,20 @@ def create_story(df: pd.DataFrame):
     ani = animation.ArtistAnimation(fig, ims, interval=1000, blit=True)
     """
 
-    ax2 = fig.add_axes([0.3, 0.2, 0.7, 0.3])
+    photo = photo_map['Start']
+    width, height = photo.shape[0], photo.shape[1]
+    ax2 = fig.add_axes([0.3, 0.2, 0.00013*width, 0.00013*height])
     ax2.tick_params(left=False,
                     bottom=False)
     ax2.set(xticklabels=[], yticklabels=[])
-    ax2.imshow(photo_map['Start'])
+    ax2.imshow(photo, aspect='auto')
 
     def prepare_animation(trad_onsights_barh):
         def animate(frame_number):
             photo = df.iloc[frame_number-1].photo
             if photo is not None:
-                print(photo)
-                ax2.imshow(photo)
+                width, height = photo.shape[0], photo.shape[1]
+                ax2.imshow(photo, aspect=(float(height)/width))
             print(frame_number)
             counts = get_ascent_counts(df.iloc[:frame_number])
             print(counts)
