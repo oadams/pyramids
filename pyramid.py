@@ -382,8 +382,11 @@ def create_story(df: pd.DataFrame):
 
         return animate
 
-    ani = animation.FuncAnimation(fig, prepare_animation(trad_onsights_barh), repeat=False, interval=1000)
+    ani = animation.FuncAnimation(fig, prepare_animation(trad_onsights_barh), len(df)+1, repeat=False, interval=1000)
 
+    tag = ani.to_html5_video()
+    with open('tag.html', 'w') as f:
+        print(tag, file=f)
 
     plt.show()
 
