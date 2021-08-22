@@ -255,12 +255,16 @@ def create_story(df: pd.DataFrame):
     #df = df[df['Ascent Type'] == 'Onsight'][df['Style'] == 'Trad'].sort_values('Ascent Date')
     df = df.sort_values('Ascent Date')
 
-    fig = plt.figure(figsize=(15,10))
+    fig = plt.figure(figsize=(14,9))
     ax = fig.add_subplot(1, 1, 1)
     major_ticks = np.arange(0, 26)
     ax.set_yticks(major_ticks)
     ax.set_xticks(major_ticks)
-    ax.set_xlim(left=0, right=25)
+    ax.set_xlim(left=0, right=20)
+    ax.set_ylim(bottom=0, top=20)
+    ax.set_ylabel('Grade')
+    ax.set_xlabel('Count')
+
 
     #counts = get_ascent_counts(df.iloc[:3])
     counts = get_ascent_counts(df.iloc[:0])
@@ -332,20 +336,30 @@ def create_story(df: pd.DataFrame):
     ani = animation.ArtistAnimation(fig, ims, interval=1000, blit=True)
     """
 
+    #width, height = photo.shape[0], photo.shape[1]
+    #ax2 = fig.add_axes([0.4, 0.4, 0.00010*width, 0.00010*height])
+    #ax2.tick_params(left=False,
+    #                bottom=False)
+    #ax2.set(xticklabels=[], yticklabels=[])
+    #ax2.imshow(photo, aspect='auto')
+
     photo = photo_map['Start']
     width, height = photo.shape[0], photo.shape[1]
-    ax2 = fig.add_axes([0.3, 0.2, 0.00013*width, 0.00013*height])
-    ax2.tick_params(left=False,
+    ax3 = fig.add_axes([0.4, 0.2, 0.00016*height, 0.00016*width])
+    ax3.tick_params(left=False,
                     bottom=False)
-    ax2.set(xticklabels=[], yticklabels=[])
-    ax2.imshow(photo, aspect='auto')
+    ax3.set(xticklabels=[], yticklabels=[])
+    ax3.axis('off')
+    ax3.imshow(photo)
+
+    _ = ax.legend([clean_seconds_barh, clean_topropes_barh, battle_to_top_barh], ['clean seconds', 'clean topropes', 'weighted rope'], loc='center', bbox_to_anchor=(0.5, -0.10), shadow=False, ncol=3)
 
     def prepare_animation(trad_onsights_barh):
         def animate(frame_number):
             photo = df.iloc[frame_number-1].photo
             if photo is not None:
                 width, height = photo.shape[0], photo.shape[1]
-                ax2.imshow(photo, aspect=(float(height)/width))
+                ax3.imshow(photo)
             print(frame_number)
             counts = get_ascent_counts(df.iloc[:frame_number])
             print(counts)
@@ -382,7 +396,7 @@ def create_story(df: pd.DataFrame):
 
         return animate
 
-    ani = animation.FuncAnimation(fig, prepare_animation(trad_onsights_barh), len(df)+1, repeat=False, interval=1000)
+    ani = animation.FuncAnimation(fig, prepare_animation(trad_onsights_barh), len(df)+1, repeat=False, interval=2500)
 
     tag = ani.to_html5_video()
     with open('tag.html', 'w') as f:
