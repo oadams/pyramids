@@ -185,17 +185,19 @@ def create_stack_chart(df: pd.DataFrame):
     plt.barh(range(1, 25), counts['trad_onsights'], color='green', label='Trad onsight')
     plt.barh(range(1, 25), counts['sport_onsights'], left=sum_, color='#98ff98', label='Sport onsight')
     sum_ += counts['sport_onsights']
-    plt.barh(range(1, 25), counts['trad_flashes'], left=sum_, color='#750000', label='Trad flash')
+    plt.barh(range(1, 25), counts['trad_flashes'], left=sum_, color='#311432', label='Trad flash')
     sum_ += counts['trad_flashes']
     #plt.barh(range(1, 25), sport_flashes, left = trad_onsights + sport_onsights + trad_flashes, color='orange')
-    plt.barh(range(1, 25), counts['trad_redpoints'], left=sum_, color='#A30000', label='Trad redpoint')
+    plt.barh(range(1, 25), counts['trad_redpoints'], left=sum_, color='#620436', label='Trad redpoint')
     sum_ += counts['trad_redpoints']
     plt.barh(range(1, 25), counts['sport_flashes'], left=sum_, color='#D10000', label='Sport flash')
     sum_ += counts['sport_flashes']
     plt.barh(range(1, 25), counts['sport_redpoints'], left=sum_, color='#FF2400', label='Sport redpoint')
     sum_ += counts['sport_redpoints']
     #plt.barh(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
-    plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='#FF8A8A', label='Pinkpoint (sport or trad)')
+    #plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='#FA86C4', label='Pinkpoint (sport or trad)')
+    #plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='#FEC5E5', label='Pinkpoint (sport or trad)')
+    plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='#FC46AA', label='Pinkpoint (sport or trad)')
     sum_ += counts['pinkpoints']
     plt.barh(range(1, 25), counts['cleans'], left=sum_, color='xkcd:sky blue', label='Clean lead (yoyo, simulclimbing)')
     sum_ += counts['cleans']
