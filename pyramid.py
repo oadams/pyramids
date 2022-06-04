@@ -54,8 +54,18 @@ def ysd2ewbanks(grade: str) -> int:
         return 20
     elif grade == '5.10d':
         return 20
+    elif grade == '5.11a':
+        return 21
+    elif grade == '5.11b':
+        return 22
+    elif grade == '5.11c':
+        return 23
+    elif grade == '5.11d':
+        return 23
+    elif grade == '5.12a':
+        return 24
     else:
-        raise ValueError("Haven't accouned for YSD grade {}".format(grade))
+        raise ValueError("Haven't accounted for YSD grade {}".format(grade))
 
 
 def is_ewbanks(ascent_grade: str) -> bool:
