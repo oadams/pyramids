@@ -1,9 +1,13 @@
+""" Generates climb histograms based on exported logbooks from thecrag.com. """
+
 import argparse
 import copy
 from typing import List
 
-import pandas as pd # type: ignore
-import plotnine as p9 # type: ignore
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd  # type: ignore
+import plotnine as p9  # type: ignore
 
 
 # The complement of this set is what thecrag considers a 'successful' ascent.
@@ -29,8 +33,7 @@ def is_ysd(ascent_grade: str) -> bool:
     """ Indicates whether a grade formatted in Yosemite Decimal System. """
     if str(ascent_grade).startswith('5.'):
         return True
-    else:
-        return False
+    return False
 
 
 def ysd2ewbanks(grade: str) -> int:
@@ -80,10 +83,19 @@ def is_ewbanks(ascent_grade: str) -> bool:
 
 
 def is_ewbanks_or_ysd(ascent_grade: str) -> bool:
+    """ True if the grade type is formatted as Ewbanks or Yosemite Decimal,
+    False otherwise.
+    """
     return is_ewbanks(ascent_grade) or is_ysd(ascent_grade)
 
 
 def classify_style(crag_path: str) -> str:
+    """ Logbooks downloaded from thecrag.com don't include the style of the
+    route as an attribute of the ascent. Instead the route must be referenced
+    to determine the ascent type. So what we do here is use a heuristic based
+    on climbing areas to determine what is sport and what is trad. However,
+    this is not going to be completely accurate.
+    """
 
     if 'Arapiles' in crag_path:
         return 'Trad'
@@ -97,6 +109,8 @@ def classify_style(crag_path: str) -> str:
         return 'Trad'
     elif 'Summerday Valley' in crag_path:
         return 'Trad'
+    elif 'Yosemite' in crag_path:
+        return 'Trad'
     else:
         return 'Sport'
 
@@ -105,13 +119,19 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     """ The name of this function suggests it's not yet clear what I want it to do.
     """
 
-    # Get all clean free ascents (not weighting the rope)
-    df = df[df['Ascent Type'].apply(lambda x: clean_free(x) or x in BATTLE_TO_TOP)]
+    df = df[df['Ascent Type'].apply(lambda x: clean_free(x)
+                                    or x in BATTLE_TO_TOP)]
     print("Number of clean ascents: {}".format(len(df)))
 
-    df['Ascent Type'] = pd.Categorical(df['Ascent Type'], ['Onsight', 'Flash', 'Red point', 'Pink point', 'Clean', 'Top Rope onsight', 'Top rope flash', 'Second clean', 'Top rope clean', 'Roped Solo', 'Hang dog', 'Top rope with rest', 'Second with rest'])
+    # Here we impose an ordering on ascent types, sort by them and then remove
+    # duplicate ascents so that only the best ascent of a given climb is used
+    # in the pyramid.
+    categories = ['Onsight', 'Flash', 'Red point', 'Pink point', 'Clean',
+                  'Top Rope onsight', 'Top rope flash', 'Second clean',
+                  'Top rope clean', 'Roped Solo', 'Hang dog', 'Aid',
+                  'Top rope with rest', 'Second with rest']
+    df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
     df = df.sort_values('Ascent Type')
-
     df = df.drop_duplicates(['Route ID'])
 
     df['Style'] = df['Crag Path'].apply(lambda x: classify_style(x))
@@ -120,7 +140,8 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     df = df[df['Ascent Grade'].apply(is_ewbanks_or_ysd)]
     print("Number of unique clean ascents: {}".format(len(df)))
     # TODO Convert remaining grades to Ewbanks
-    df['Ewbanks Grade'] = df['Ascent Grade'].apply(lambda x: ysd2ewbanks(x) if is_ysd(x) else x)
+    df['Ewbanks Grade'] = df['Ascent Grade'].apply(lambda x: ysd2ewbanks(x)
+                                                   if is_ysd(x) else x)
     df['Ewbanks Grade'] = df['Ewbanks Grade'].apply(lambda x: int(x))
 
     # TODO Break stats down by pitches for more fine-grained info. Currently
@@ -131,39 +152,16 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def create_plots(df: pd.DataFrame) -> List[p9.ggplot]:
-    plots = [p9.ggplot(df) + p9.geom_bar(p9.aes(x='Ewbanks Grade'))]
-    return plots
-
-
 def create_stack_chart(df: pd.DataFrame):
-    """
-    import numpy as np
-    import pandas as pd
-    from pandas import Series, DataFrame
-    import matplotlib.pyplot as plt
 
-    data1 = [23,85, 72, 43, 52]
-    data2 = [42, 35, 21, 16, 9]
-    plt.bar(range(len(data1)), data1)
-    plt.bar(range(len(data2)), data2, bottom=data1)
-    plt.show()
-    """
-
-    import matplotlib.pyplot as plt
-    import numpy as np
-
-    #Groups = np.array([[7, 33, 17, 27],[6, 24, 22, 20],[14, 12, 5, 22], [3, 2, 1, 4], [5, 2, 2, 4]])
-    #group_sum = np.array([0, 0])
     counts = dict()
-    tick_types = ['trad_onsights', 'sport_onsights', 'trad_flashes', 'sport_flashes', 'trad_redpoints',
-                  'sport_redpoints', 'pinkpoints', 'cleans', 'clean_seconds', 'clean_topropes',
-                  'battle_to_top']
+    tick_types = ['trad_onsights', 'sport_onsights', 'trad_flashes',
+                  'sport_flashes', 'trad_redpoints', 'sport_redpoints',
+                  'pinkpoints', 'cleans', 'clean_seconds', 'clean_topropes',
+                  'aid', 'battle_to_top']
     for tick_type in tick_types:
         counts[tick_type] = np.zeros(24)
     for grade in range(1, 25):
-        if grade == 18:
-            print(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'])
         counts['trad_onsights'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'][df['Style'] == 'Trad'])
         counts['sport_onsights'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'][df['Style'] == 'Sport'])
         counts['trad_flashes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Flash'][df['Style'] == 'Trad'])
@@ -174,6 +172,7 @@ def create_stack_chart(df: pd.DataFrame):
         counts['cleans'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Clean'])
         counts['clean_seconds'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Second clean'])])
         counts['clean_topropes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo'])])
+        counts['aid'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Aid'])])
         counts['battle_to_top'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Hang dog', 'Top rope with rest', 'Second with rest'])])
 
     fig = plt.figure()
@@ -186,13 +185,17 @@ def create_stack_chart(df: pd.DataFrame):
     plt.barh(range(1, 25), counts['trad_onsights'], color='green', label='Trad onsight')
     plt.barh(range(1, 25), counts['sport_onsights'], left=sum_, color='#98ff98', label='Sport onsight')
     sum_ += counts['sport_onsights']
-    plt.barh(range(1, 25), counts['trad_flashes'], left=sum_, color='#800020', label='Trad flash')
+    plt.barh(range(1, 25), counts['trad_flashes'], left=sum_, color='#750000', label='Trad flash')
     sum_ += counts['trad_flashes']
     #plt.barh(range(1, 25), sport_flashes, left = trad_onsights + sport_onsights + trad_flashes, color='orange')
-    plt.barh(range(1, 25), counts['trad_redpoints'], left=sum_, color='red', label='Trad redpoint')
+    plt.barh(range(1, 25), counts['trad_redpoints'], left=sum_, color='#A30000', label='Trad redpoint')
     sum_ += counts['trad_redpoints']
+    plt.barh(range(1, 25), counts['sport_flashes'], left=sum_, color='#D10000', label='Sport flash')
+    sum_ += counts['sport_flashes']
+    plt.barh(range(1, 25), counts['sport_redpoints'], left=sum_, color='#FF2400', label='Sport redpoint')
+    sum_ += counts['sport_redpoints']
     #plt.barh(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
-    plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='pink', label='Pinkpoint (sport or trad)')
+    plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='#FF8A8A', label='Pinkpoint (sport or trad)')
     sum_ += counts['pinkpoints']
     plt.barh(range(1, 25), counts['cleans'], left=sum_, color='xkcd:sky blue', label='Clean lead (yoyo, simulclimbing)')
     sum_ += counts['cleans']
@@ -200,6 +203,8 @@ def create_stack_chart(df: pd.DataFrame):
     sum_ += counts['clean_seconds']
     plt.barh(range(1, 25), counts['clean_topropes'], left=sum_, color='#FFFF00', label='Clean toprope')
     sum_ += counts['clean_topropes']
+    plt.barh(range(1, 25), counts['aid'], left=sum_, color='black', label='Aid')
+    sum_ += counts['aid']
     plt.barh(range(1, 25), counts['battle_to_top'], left=sum_, color='gray', label='Battle to top (hangdog, second/toprope weighting rope)')
 
     _ = ax.legend(loc='center', bbox_to_anchor=(0.5, -0.10), shadow=False, ncol=2)
@@ -215,7 +220,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     df = pd.read_csv(args.csv)
     df = prepare_df(df)
-    print(set(df['Ascent Type']))
-    plots = create_plots(df)
-    p9.save_as_pdf_pages(plots, filename='plot2.pdf')
     create_stack_chart(df)
