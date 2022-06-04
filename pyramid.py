@@ -307,7 +307,12 @@ def create_story(df: pd.DataFrame):
         'Piccolo2': mpimg.imread('animation/photos/20210513_113643.jpg'),
         'Mantle': ndimage.rotate(mpimg.imread('animation/photos/20210704_133931.jpg'), -90),
         'Mantle2': mpimg.imread('animation/photos/20210704_160639(0).jpg'),
-        'Mantle3': mpimg.imread('animation/photos/20210704_160700.jpg')
+        'Mantle3': mpimg.imread('animation/photos/20210704_160700.jpg'),
+        'Strife on the Gravy Train': mpimg.imread('animation/photos/strife.png'),
+        'Hand Job': mpimg.imread('animation/photos/hand_job.jpg'),
+        'Sexless Sue': mpimg.imread('animation/photos/sexless_sue.jpg'),
+        'Trooper One': mpimg.imread('animation/photos/trooper_one.jpg'),
+        'Watchtower Chimney': mpimg.imread('animation/photos/watchtower_chimney.jpg'),
     }
     df['photo'] = df.apply(lambda x: photo_map[x['Ascent Label']] if x['Ascent Label'] in photo_map else None, axis=1)
 
@@ -396,7 +401,7 @@ def create_story(df: pd.DataFrame):
 
         return animate
 
-    ani = animation.FuncAnimation(fig, prepare_animation(trad_onsights_barh), len(df)+1, repeat=False, interval=2500)
+    ani = animation.FuncAnimation(fig, prepare_animation(trad_onsights_barh), len(df)+1, repeat=False, interval=3000)
 
     tag = ani.to_html5_video()
     with open('tag.html', 'w') as f:
