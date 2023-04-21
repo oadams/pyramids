@@ -1,8 +1,10 @@
-""" Generates climb histograms based on exported logbooks from thecrag.com. """
+""" Generates climb histograms based on exported logbooks from thecrag.com. 
+
+Needs to be cleaned up. Tests and assertions need to be written because its possible the final plot misses some climbs.
+"""
 
 import argparse
 import copy
-from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -123,11 +125,27 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
                                     or x in BATTLE_TO_TOP)]
     print("Number of clean ascents: {}".format(len(df)))
 
+    # If the Ascent Gear Type is Top rope or second, then change the Ascent type
+    # to conform to the old format This is to account for the new ticking
+    # interface on thecrag.
+    df.loc[(df['Ascent Gear Style'] == 'Top rope') & (df['Ascent Type'] == 'Hang dog'), 'Ascent Type'] = 'Top rope with rest'
+    df.loc[(df['Ascent Gear Style'] == 'Top rope') & (df['Ascent Type'] == 'Clean'), 'Ascent Type'] = 'Top rope clean'
+    df.loc[(df['Ascent Gear Style'] == 'Top rope') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Top rope onsight'
+    df.loc[(df['Ascent Gear Style'] == 'Top rope') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Top rope flash'
+    df.loc[(df['Ascent Gear Style'] == 'Second') & (df['Ascent Type'] == 'Hang dog'), 'Ascent Type'] = 'Second with rest'
+    df.loc[(df['Ascent Gear Style'] == 'Second') & (df['Ascent Type'] == 'Clean'), 'Ascent Type'] = 'Second clean'
+    df.loc[(df['Ascent Gear Style'] == 'Second') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Second onsight'
+    df.loc[(df['Ascent Gear Style'] == 'Second') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Second flash'
+    # TODO Handle 'Second'/'tick' etc.
+    # TODO Look at this and sort out edge cases df[['Ascent Type', 'Ascent Gear Style']].drop_duplicates(). There might be some cases that are missing.
+    # TODO Now that there is a second flash and second onsight possibility, This code should go through teh log history and flag second cleans as second flashes or onsights.
+    # TODO I'm not including soloing here. Scrange's onsight solo of tullah's tease is not being rendered.
+
     # Here we impose an ordering on ascent types, sort by them and then remove
     # duplicate ascents so that only the best ascent of a given climb is used
     # in the pyramid.
-    categories = ['Onsight', 'Flash', 'Red point', 'Pink point', 'Clean',
-                  'Top Rope onsight', 'Top rope flash', 'Second clean',
+    categories = ['Onsight', 'Flash', 'Red point', 'Pink point', 'Clean', 'Second onsight', 'Second flash', 
+                  'Top rope onsight', 'Top rope flash', 'Second clean',
                   'Top rope clean', 'Roped Solo', 'Hang dog', 'Aid',
                   'Top rope with rest', 'Second with rest']
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
@@ -136,6 +154,8 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
 
     df['Style'] = df['Crag Path'].apply(lambda x: classify_style(x))
 
+    # Just setting ascent grade to always be the route grade.
+    df['Ascent Grade'] = df['Route Grade']
     # Remove non-Ewbanks/YSD graded stuff.
     df = df[df['Ascent Grade'].apply(is_ewbanks_or_ysd)]
     print("Number of unique clean ascents: {}".format(len(df)))
@@ -170,8 +190,8 @@ def create_stack_chart(df: pd.DataFrame):
         counts['sport_redpoints'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'][df['Style'] == 'Sport'])
         counts['pinkpoints'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Pink point'])
         counts['cleans'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Clean'])
-        counts['clean_seconds'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Second clean'])])
-        counts['clean_topropes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top Rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo'])])
+        counts['clean_seconds'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Second clean', 'Second flash', 'Second onsight'])])
+        counts['clean_topropes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo'])])
         counts['aid'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Aid'])])
         counts['battle_to_top'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Hang dog', 'Top rope with rest', 'Second with rest'])])
 
@@ -209,7 +229,7 @@ def create_stack_chart(df: pd.DataFrame):
     sum_ += counts['aid']
     plt.barh(range(1, 25), counts['battle_to_top'], left=sum_, color='gray', label='Battle to top (hangdog, second/toprope weighting rope)')
 
-    _ = ax.legend(loc='center', bbox_to_anchor=(0.5, -0.10), shadow=False, ncol=2)
+    _ = ax.legend(loc='center', bbox_to_anchor=(0.5, -0.10), shadow=False, ncol=6)
 
     plt.show()
 
