@@ -92,7 +92,10 @@ def is_ewbanks_or_ysd(ascent_grade: str) -> bool:
 
 
 def classify_style(crag_path: str) -> str:
-    """ Logbooks downloaded from thecrag.com don't include the style of the
+    """ 
+    # TODO this has changed with the new tick interface on thecrag.
+    
+    Logbooks downloaded from thecrag.com don't include the style of the
     route as an attribute of the ascent. Instead the route must be referenced
     to determine the ascent type. So what we do here is use a heuristic based
     on climbing areas to determine what is sport and what is trad. However,
