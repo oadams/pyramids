@@ -53,13 +53,23 @@ def parse_contents(contents, filename, date):
         ])
 
     df = prepare_df(df)
-    #df = df[df['Ascent Type'].isin(['Top rope clean', 'Second clean', 'Onsight'])]
+    df = df.drop(['Ascent Label', 'Ascent ID', 'Ascent Link', 'Ascent Grade', 'Route Gear Style', 'Ascent Height', 'Route Height', 'Country Link', 'Crag Link'], axis=1)
+
+    fig = px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h', hover_data=["Route Name", 'Ascent Date', "Comment"])
+
+    fig.update_layout(
+        yaxis = dict(
+            tickmode = 'linear',
+            tick0 = 1,
+            dtick = 1
+        )
+    )
 
     return html.Div([
         html.H5(filename),
 
-        dash_table.DataTable(data=df.to_dict('records'), page_size=10),
-        dcc.Graph(figure=px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h', hover_data=["Route Name", 'Ascent Date', "Comment"]))
+        #dash_table.DataTable(data=df.to_dict('records'), page_size=10),
+        dcc.Graph(figure=fig)
     ])
 
 @app.callback(Output('output-data-upload', 'children'),
