@@ -53,29 +53,13 @@ def parse_contents(contents, filename, date):
         ])
 
     df = prepare_df(df)
+    #df = df[df['Ascent Type'].isin(['Top rope clean', 'Second clean', 'Onsight'])]
 
     return html.Div([
         html.H5(filename),
-        html.H6(datetime.datetime.fromtimestamp(date)),
 
-        dash_table.DataTable(
-            df.to_dict('records'),
-            [{'name': i, 'id': i} for i in df.columns]
-        ),
-
-        html.Hr(),  # horizontal line
-
-        # For debugging, display the raw contents provided by the web browser
-        html.Div('Raw Content'),
-        html.Pre(contents[0:200] + '...', style={
-            'whiteSpace': 'pre-wrap',
-            'wordBreak': 'break-all'
-        }),
-
-        html.Div(children='My First App with Data and a Graph'),
         dash_table.DataTable(data=df.to_dict('records'), page_size=10),
-        #dcc.Graph(figure=px.histogram(df, x='continent', y='lifeExp', histfunc='avg'))
-        dcc.Graph(figure=px.bar(df, y='Ascent Grade', color='Ascent Type', orientation='h'))
+        dcc.Graph(figure=px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h', hover_data=["Route Name", 'Ascent Date', "Comment"]))
     ])
 
 @app.callback(Output('output-data-upload', 'children'),

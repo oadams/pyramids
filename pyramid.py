@@ -147,11 +147,14 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     # Here we impose an ordering on ascent types, sort by them and then remove
     # duplicate ascents so that only the best ascent of a given climb is used
     # in the pyramid.
+
+    """
     categories = ['Onsight', 'Flash', 'Red point', 'Pink point', 'Clean', 'Second onsight', 'Second flash', 
                   'Top rope onsight', 'Top rope flash', 'Second clean',
                   'Top rope clean', 'Roped Solo', 'Hang dog', 'Aid',
                   'Top rope with rest', 'Second with rest']
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
+    """
     df = df.sort_values('Ascent Type')
     df = df.drop_duplicates(['Route ID'])
 
@@ -166,6 +169,8 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     df['Ewbanks Grade'] = df['Ascent Grade'].apply(lambda x: ysd2ewbanks(x)
                                                    if is_ysd(x) else x)
     df['Ewbanks Grade'] = df['Ewbanks Grade'].apply(lambda x: int(x))
+
+    df['num'] = 1
 
     # TODO Break stats down by pitches for more fine-grained info. Currently
     # just using whole routes but I would prefer it if the output was per-pitch
@@ -245,4 +250,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     df = pd.read_csv(args.csv)
     df = prepare_df(df)
+    breakpoint()
     create_stack_chart(df)
