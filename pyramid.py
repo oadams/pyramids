@@ -9,7 +9,6 @@ import copy
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd  # type: ignore
-import plotnine as p9  # type: ignore
 
 
 # The complement of this set is what thecrag considers a 'successful' ascent.
@@ -70,6 +69,7 @@ def ysd2ewbanks(grade: str) -> int:
     elif grade == '5.12a':
         return 24
     else:
+        return ysd2ewbanks(grade.split()[0])
         raise ValueError("Haven't accounted for YSD grade {}".format(grade))
 
 
