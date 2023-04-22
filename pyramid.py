@@ -157,9 +157,9 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     # duplicate ascents so that only the best ascent of a given climb is used
     # in the pyramid.
 
-    categories = ['Trad onsight', 'Trad flash', 'Sport onsight', 'Sport flash', 'Trad red point',  'Sport red point', 'Pink point', 'Clean', 'Second onsight', 'Second flash', 
+    categories = ['Trad onsight', 'Trad flash', 'Sport onsight', 'Sport flash', 'Trad red point',  'Sport red point', 'Pink point', 'Second onsight', 'Second flash', 
                   'Top rope onsight', 'Top rope flash', 'Second clean',
-                  'Top rope clean', 'Roped Solo', 'Hang dog', 'Aid',
+                  'Top rope clean', 'Roped Solo', 'Clean', 'Hang dog', 'Aid',
                   'Top rope with rest', 'Second with rest']
     print(categories)
     print(len(categories))

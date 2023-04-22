@@ -55,7 +55,25 @@ def parse_contents(contents, filename, date):
     df = prepare_df(df)
     df = df.drop(['Ascent Label', 'Ascent ID', 'Ascent Link', 'Ascent Grade', 'Route Gear Style', 'Ascent Height', 'Route Height', 'Country Link', 'Crag Link'], axis=1)
 
-    fig = px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h', hover_data=["Route Name", 'Ascent Date', "Comment"])
+    fig = px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h', hover_data=["Route Name", 'Ascent Date', "Comment"], color_discrete_map={
+                "Trad onsight": "#2CA02C",
+                "Sport onsight": "#00CC96",
+                "Trad flash": "#FFA15A",
+                "Sport flash": "#EECA3B",
+                "Trad red point": "#B82E2E",
+                "Sport red point": "#DC3912",
+                "Pink point": "#FF6692",
+                "Second onsight": "#AB63FA",
+                "Second flash": "#AB63FA",
+                "Second clean": "#AB63FA",
+                "Top rope onsight": "#3366CC",
+                "Top rope flash": "#0099C6",
+                "Top rope clean": "#19D3F3",
+                "Roped Solo": "#19D3F3",
+                "Hang dog": "#7F7F7F",
+                "Top rope with rest": "#BAB0AC",
+                "Clean": "#E48F72",
+                })
 
     fig.update_layout(
         yaxis = dict(
