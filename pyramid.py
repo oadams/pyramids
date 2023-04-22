@@ -128,6 +128,9 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
                                     or x in BATTLE_TO_TOP)]
     print("Number of clean ascents: {}".format(len(df)))
 
+    # If the ascent gear style is unknown, then inherit the route gear style
+    df.loc[df['Ascent Gear Style'].isna(), 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'].isna(), 'Route Gear Style']
+    
     # If the Ascent Gear Type is Top rope or second, then change the Ascent type
     # to conform to the old format This is to account for the new ticking
     # interface on thecrag.
@@ -139,6 +142,12 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[(df['Ascent Gear Style'] == 'Second') & (df['Ascent Type'] == 'Clean'), 'Ascent Type'] = 'Second clean'
     df.loc[(df['Ascent Gear Style'] == 'Second') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Second onsight'
     df.loc[(df['Ascent Gear Style'] == 'Second') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Second flash'
+    df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Trad red point'
+    df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Trad onsight'
+    df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Trad flash'
+    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Sport red point'
+    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Sport onsight'
+    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Sport flash'
     # TODO Handle 'Second'/'tick' etc.
     # TODO Look at this and sort out edge cases df[['Ascent Type', 'Ascent Gear Style']].drop_duplicates(). There might be some cases that are missing.
     # TODO Now that there is a second flash and second onsight possibility, This code should go through teh log history and flag second cleans as second flashes or onsights.
@@ -148,23 +157,22 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     # duplicate ascents so that only the best ascent of a given climb is used
     # in the pyramid.
 
-    """
-    categories = ['Onsight', 'Flash', 'Red point', 'Pink point', 'Clean', 'Second onsight', 'Second flash', 
+    categories = ['Trad onsight', 'Trad flash', 'Sport onsight', 'Sport flash', 'Trad red point',  'Sport red point', 'Pink point', 'Clean', 'Second onsight', 'Second flash', 
                   'Top rope onsight', 'Top rope flash', 'Second clean',
                   'Top rope clean', 'Roped Solo', 'Hang dog', 'Aid',
                   'Top rope with rest', 'Second with rest']
+    print(categories)
+    print(len(categories))
+    categories = [category for category in categories if category in df['Ascent Type'].unique()]
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
-    """
     df = df.sort_values('Ascent Type')
     df = df.drop_duplicates(['Route ID'])
-
-    df['Style'] = df['Crag Path'].apply(lambda x: classify_style(x))
 
     # Just setting ascent grade to always be the route grade.
     df['Ascent Grade'] = df['Route Grade']
     # Remove non-Ewbanks/YSD graded stuff.
     df = df[df['Ascent Grade'].apply(is_ewbanks_or_ysd)]
-    print("Number of unique clean ascents: {}".format(len(df)))
+    print("Number of unique ascents: {}".format(len(df)))
     # TODO Convert remaining grades to Ewbanks
     df['Ewbanks Grade'] = df['Ascent Grade'].apply(lambda x: ysd2ewbanks(x)
                                                    if is_ysd(x) else x)
