@@ -71,6 +71,7 @@ def parse_contents(contents, filename, date):
                 "Top rope clean": "#19D3F3",
                 "Roped Solo": "#19D3F3",
                 "Hang dog": "#7F7F7F",
+                "Second with rest": "#BAB0AC",
                 "Top rope with rest": "#BAB0AC",
                 "Clean": "#E48F72",
                 })
