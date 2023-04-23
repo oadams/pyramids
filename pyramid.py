@@ -167,6 +167,9 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
     df = df.sort_values('Ascent Type')
     df = df.drop_duplicates(['Route ID'])
+    # Update categories because dash will complain if we have categories with no values
+    categories = [category for category in categories if category in df['Ascent Type'].unique()]
+    df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
 
     # Just setting ascent grade to always be the route grade.
     df['Ascent Grade'] = df['Route Grade']
