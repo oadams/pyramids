@@ -128,6 +128,9 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
                                     or x in BATTLE_TO_TOP)]
     print("Number of clean ascents: {}".format(len(df)))
 
+    # Filter out my gym climbs
+    df = df[df['Crag Path'] != 'Inner Melbourne - Hardrock CBD - Climbing routes']
+
     # If the ascent gear style is unknown, then inherit the route gear style
     df.loc[df['Ascent Gear Style'].isna(), 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'].isna(), 'Route Gear Style']
     
@@ -173,13 +176,16 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     categories = [category for category in categories if category in df['Ascent Type'].unique()]
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
     df = df.sort_values('Ascent Type')
-    df = df.drop_duplicates(['Route ID'])
+    #df = df.drop_duplicates(['Route ID'])
     # Update categories because dash will complain if we have categories with no values
     categories = [category for category in categories if category in df['Ascent Type'].unique()]
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
 
     # Just setting ascent grade to always be the route grade.
     df['Ascent Grade'] = df['Route Grade']
+    # Strip R ratings. Currently this needs to happen before check for Ewbanks.
+    df['Ascent Grade'] = df['Ascent Grade'].apply(lambda x: x.strip(' R') if isinstance(x, str)
+                                                      else x)
     # Remove non-Ewbanks/YSD graded stuff.
     df = df[df['Ascent Grade'].apply(is_ewbanks_or_ysd)]
     print("Number of unique ascents: {}".format(len(df)))
@@ -267,6 +273,7 @@ parser.add_argument('csv', help='Your logbook from thecrag.com in CSV format.')
 if __name__ == '__main__':
     args = parser.parse_args()
     df = pd.read_csv(args.csv)
+    breakpoint()
     df = prepare_df(df)
     breakpoint()
     create_stack_chart(df)
