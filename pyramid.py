@@ -1,13 +1,11 @@
-""" Generates climb histograms based on exported logbooks from thecrag.com. 
+"""
+Generates climb histograms based on exported logbooks from thecrag.com.
 
 Needs to be cleaned up. Tests and assertions need to be written because its possible the final plot misses some climbs.
 """
 
 import argparse
-import copy
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd  # type: ignore
 
 
@@ -30,52 +28,126 @@ def clean_free(ascent_type: str) -> bool:
     return ascent_type not in NOT_ON
 
 
-def is_ysd(ascent_grade: str) -> bool:
-    """ Indicates whether a grade formatted in Yosemite Decimal System. """
-    if str(ascent_grade).startswith('5.'):
-        return True
-    return False
+GRADE_MAP = {
+    '3.0': 1,
+    '4.0': 3,
+    '5.0': 4,
+    '5.1': 6,
+    '5.2': 7,
+    '5.3': 9,
+    '5.4': 10,
+    '5.5': 12,
+    '5.6': 13,
+    '5.7': 14,
+    '5.8': 15,
+    '5.9': 17,
+    '5.10a': 18,
+    '5.10b': 19,
+    '5.10c': 20,
+    '5.10d': 20,
+    '5.11a': 21,
+    '5.11b': 22,
+    '5.11c': 23,
+    '5.11d': 23,
+    '5.12a': 24,
+    '5.12b': 25,
+    '5.12c': 26,
+    '5.12d': 27,
+    '5.13a': 28,
+    '5.13b': 29,
+    '5.13c': 30,
+    '5.13d': 31,
+    '5.14a': 32,
+    '5.14b': 33,
+    '5.14c': 34,
+    '5.14d': 35,
+    '5.15a': 36,
+    '5.15b': 37,
+    '5.15c': 38,
+    '5.15d': 39,
+    '1a': 1,
+    '1a+': 1,
+    '1b': 2,
+    '1b+': 3,
+    '1c': 4,
+    '1c+': 4,
+    '2a': 5,
+    '2a+': 5,
+    '2b': 6,
+    '2b+': 7,
+    '2c': 8,
+    '2c+': 8,
+    '3a': 9,
+    '3a+': 10,
+    '3b': 10,
+    '3b+': 11,
+    '3c': 11,
+    '3c+': 12,
+    '4a': 13,
+    '4a+': 13,
+    '4b': 14,
+    '4b+': 14,
+    '4c': 15,
+    '4c+': 15,
+    '5a': 16,
+    '5a+': 16,
+    '5b': 16,
+    '5b+': 17,
+    '5c': 17,
+    '5c+': 18,
+    '6a': 18,
+    '6a+': 19,
+    '6b': 20,
+    '6b+': 21,
+    '6c': 22,
+    '6c+': 22,
+    '7a': 23,
+    '7a+': 24,
+    '7b': 25,
+    '7b+': 26,
+    '7c': 27,
+    '7c+': 28,
+    '8a': 29,
+    '8a+': 30,
+    '8b': 31,
+    '8b+': 32,
+    '8c': 33,
+    '8c+': 34,
+    '9a': 35,
+    '9a+': 36,
+    '9b': 37,
+    '9b+': 38,
+    '9c': 39,
+}
 
 
-def ysd2ewbanks(grade: str) -> int:
-    """ Convert a grade from Yosemite Decimal System to Ewbanks. """
+def convert_to_ewbanks(grade: str) -> int:
+    """ Convert a grade to Ewbanks. Currently supports Yosemite Decimal System and French. """
 
-    if grade == '5.5':
-        return 12
-    elif grade == '5.6':
-        return 13
-    elif grade == '5.7':
-        return 14
-    elif grade == '5.8':
-        return 15
-    elif grade == '5.9':
-        return 17
-    elif grade == '5.10a':
-        return 18
-    elif grade == '5.10b':
-        return 19
-    elif grade == '5.10c':
-        return 20
-    elif grade == '5.10d':
-        return 20
-    elif grade == '5.11a':
-        return 21
-    elif grade == '5.11b':
-        return 22
-    elif grade == '5.11c':
-        return 23
-    elif grade == '5.11d':
-        return 23
-    elif grade == '5.12a':
-        return 24
+    if is_ewbanks(grade):
+        return int(grade)
+    elif grade in GRADE_MAP:
+        return GRADE_MAP[grade]
     else:
-        return ysd2ewbanks(grade.split()[0])
-        raise ValueError("Haven't accounted for YSD grade {}".format(grade))
+        raise ValueError(f'Cannot convert grade {grade} to Ewbanks. Code currently assumes only YDS or French.')
+
+
+def grade_supported(grade: str) -> bool:
+    try:
+        convert_to_ewbanks(grade)
+    except ValueError:
+        return False
+
+    return True
 
 
 def is_ewbanks(ascent_grade: str) -> bool:
     """ If a grade can be converted to an integer, then it must be in the
-    Ewbanks system, or at least not French or YDS."""
+    Ewbanks system, or at least not French or YDS.
+
+    The check as it stands might think some UIAA climbs are Ewbanks. To make this more robust
+    location information should be used as well.
+    """
     try:
         int(ascent_grade)
     except ValueError:
@@ -84,52 +156,13 @@ def is_ewbanks(ascent_grade: str) -> bool:
         return True
 
 
-def is_ewbanks_or_ysd(ascent_grade: str) -> bool:
-    """ True if the grade type is formatted as Ewbanks or Yosemite Decimal,
-    False otherwise.
-    """
-    return is_ewbanks(ascent_grade) or is_ysd(ascent_grade)
-
-
-def classify_style(crag_path: str) -> str:
-    """ 
-    # TODO this has changed with the new tick interface on thecrag.
-    
-    Logbooks downloaded from thecrag.com don't include the style of the
-    route as an attribute of the ascent. Instead the route must be referenced
-    to determine the ascent type. So what we do here is use a heuristic based
-    on climbing areas to determine what is sport and what is trad. However,
-    this is not going to be completely accurate.
-    """
-
-    if 'Arapiles' in crag_path:
-        return 'Trad'
-    elif 'Bad Moon Rising Wall' in crag_path:
-        return 'Trad'
-    elif 'Taipan Wall' in crag_path:
-        return 'Trad'
-    elif 'The Green Wall' in crag_path:
-        return 'Trad'
-    elif 'Mt Stapylton Amphitheatre - Central Buttress' in crag_path:
-        return 'Trad'
-    elif 'Summerday Valley' in crag_path:
-        return 'Trad'
-    elif 'Yosemite' in crag_path:
-        return 'Trad'
-    else:
-        return 'Sport'
-
-
 def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     """ The name of this function suggests it's not yet clear what I want it to do.
     """
 
     df = df[df['Ascent Type'].apply(lambda x: clean_free(x)
                                     or x in BATTLE_TO_TOP)]
-    print("Number of clean ascents: {}".format(len(df)))
-
-    # Filter out my gym climbs
-    df = df[df['Crag Path'] != 'Inner Melbourne - Hardrock CBD - Climbing routes']
+    print("Number of ascents: {}".format(len(df)))
 
     # If the ascent gear style is unknown, then inherit the route gear style
     df.loc[df['Ascent Gear Style'].isna(), 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'].isna(), 'Route Gear Style']
@@ -166,8 +199,9 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     # duplicate ascents so that only the best ascent of a given climb is used
     # in the pyramid.
 
+    # TODO Use this commented ordering as an alternative ordering when a flag is set.
     """
-    categories = ['Trad onsight', 'Trad flash', 'Sport onsight', 'Sport flash', 'Trad red point',  'Sport red point', 'Pink point', 'Second onsight', 'Second flash', 
+    categories = ['Trad onsight', 'Trad flash', 'Sport onsight', 'Sport flash', 'Trad red point',  'Sport red point', 'Pink point', 'Second onsight', 'Second flash',
                   'Top rope onsight', 'Top rope flash', 'Second clean',
                   'Top rope clean', 'Roped Solo', 'Clean', 'Hang dog', 'Aid',
                   'Top rope with rest', 'Second with rest']
@@ -193,12 +227,11 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     df['Ascent Grade'] = df['Ascent Grade'].apply(lambda x: x.strip(' R') if isinstance(x, str)
                                                   else x)
     # Remove non-Ewbanks/YSD graded stuff.
-    df = df[df['Ascent Grade'].apply(is_ewbanks_or_ysd)]
-    print("Number of unique ascents: {}".format(len(df)))
-    # TODO Convert remaining grades to Ewbanks
-    df['Ewbanks Grade'] = df['Ascent Grade'].apply(lambda x: ysd2ewbanks(x)
-                                                   if is_ysd(x) else x)
-    df['Ewbanks Grade'] = df['Ewbanks Grade'].apply(lambda x: int(x))
+    df['Ewbanks Grade'] = df['Ascent Grade'].apply(lambda x: convert_to_ewbanks(x) if
+                                                   grade_supported(x) else None)
+    print('NA grades:')
+    print(df[df['Ewbanks Grade'].isna()])
+    df = df.dropna(subset=['Ewbanks Grade'])
 
     df['num'] = 1
 
