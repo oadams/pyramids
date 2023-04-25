@@ -133,7 +133,7 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
 
     # If the ascent gear style is unknown, then inherit the route gear style
     df.loc[df['Ascent Gear Style'].isna(), 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'].isna(), 'Route Gear Style']
-    
+
     # If the Ascent Gear Type is Top rope or second, then change the Ascent type
     # to conform to the old format This is to account for the new ticking
     # interface on thecrag.
@@ -151,6 +151,12 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Sport red point'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Sport onsight'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Sport flash'
+    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Sport red point'
+    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Sport onsight'
+    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Sport flash'
+    df.loc[(df['Ascent Gear Style'] == 'Free solo') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Solo'
+    df.loc[(df['Ascent Gear Style'] == 'Free solo') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Onsight solo'
+    # TODO Handle other free solo subvariants.
     # TODO Handle 'Second'/'tick' etc.
     # TODO Look at this and sort out edge cases df[['Ascent Type', 'Ascent Gear Style']].drop_duplicates(). There might be some cases that are missing.
     # TODO Now that there is a second flash and second onsight possibility, This code should go through teh log history and flag second cleans as second flashes or onsights.
@@ -166,9 +172,9 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
                   'Top rope clean', 'Roped Solo', 'Clean', 'Hang dog', 'Aid',
                   'Top rope with rest', 'Second with rest']
     """
-    categories = ['Trad onsight', 'Sport onsight', 'Second onsight', 'Top rope onsight',
-                  'Trad flash', 'Sport flash', 'Second flash', 'Top rope flash', 
-                  'Trad red point',  'Sport red point', 'Pink point', 'Second clean', 'Top rope clean',
+    categories = ['Trad onsight', 'Onsight solo', 'Sport onsight', 'Second onsight', 'Top rope onsight',
+                  'Trad flash', 'Sport flash', 'Second flash', 'Top rope flash',
+                  'Trad red point', 'Solo', 'Sport red point', 'Pink point', 'Second clean', 'Top rope clean',
                   'Roped Solo', 'Clean', 'Aid', 'Hang dog',
                   'Second with rest', 'Top rope with rest', 'Attempt']
     print(categories)
@@ -176,7 +182,7 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     categories = [category for category in categories if category in df['Ascent Type'].unique()]
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
     df = df.sort_values('Ascent Type')
-    #df = df.drop_duplicates(['Route ID'])
+    df = df.drop_duplicates(['Route ID'])
     # Update categories because dash will complain if we have categories with no values
     categories = [category for category in categories if category in df['Ascent Type'].unique()]
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
@@ -185,7 +191,7 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     df['Ascent Grade'] = df['Route Grade']
     # Strip R ratings. Currently this needs to happen before check for Ewbanks.
     df['Ascent Grade'] = df['Ascent Grade'].apply(lambda x: x.strip(' R') if isinstance(x, str)
-                                                      else x)
+                                                  else x)
     # Remove non-Ewbanks/YSD graded stuff.
     df = df[df['Ascent Grade'].apply(is_ewbanks_or_ysd)]
     print("Number of unique ascents: {}".format(len(df)))
@@ -204,68 +210,6 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def create_stack_chart(df: pd.DataFrame):
-
-    counts = dict()
-    tick_types = ['trad_onsights', 'sport_onsights', 'trad_flashes',
-                  'sport_flashes', 'trad_redpoints', 'sport_redpoints',
-                  'pinkpoints', 'cleans', 'clean_seconds', 'clean_topropes',
-                  'aid', 'battle_to_top']
-    for tick_type in tick_types:
-        counts[tick_type] = np.zeros(24)
-    for grade in range(1, 25):
-        counts['trad_onsights'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'][df['Style'] == 'Trad'])
-        counts['sport_onsights'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Onsight'][df['Style'] == 'Sport'])
-        counts['trad_flashes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Flash'][df['Style'] == 'Trad'])
-        counts['sport_flashes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Flash'][df['Style'] == 'Sport'])
-        counts['trad_redpoints'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'][df['Style'] == 'Trad'])
-        counts['sport_redpoints'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Red point'][df['Style'] == 'Sport'])
-        counts['pinkpoints'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Pink point'])
-        counts['cleans'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'] == 'Clean'])
-        counts['clean_seconds'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Second clean', 'Second flash', 'Second onsight'])])
-        counts['clean_topropes'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Top rope onsight', 'Top rope flash', 'Top rope clean', 'Roped Solo'])])
-        counts['aid'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Aid'])])
-        counts['battle_to_top'][grade-1] = len(df[df['Ewbanks Grade'] == grade][df['Ascent Type'].isin(['Hang dog', 'Top rope with rest', 'Second with rest'])])
-
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-    major_ticks = np.arange(0, 26)
-    ax.set_yticks(major_ticks)
-
-    sum_ = copy.copy(counts['trad_onsights'])
-
-    plt.barh(range(1, 25), counts['trad_onsights'], color='green', label='Trad onsight')
-    plt.barh(range(1, 25), counts['sport_onsights'], left=sum_, color='#98ff98', label='Sport onsight')
-    sum_ += counts['sport_onsights']
-    plt.barh(range(1, 25), counts['trad_flashes'], left=sum_, color='#311432', label='Trad flash')
-    sum_ += counts['trad_flashes']
-    #plt.barh(range(1, 25), sport_flashes, left = trad_onsights + sport_onsights + trad_flashes, color='orange')
-    plt.barh(range(1, 25), counts['trad_redpoints'], left=sum_, color='#620436', label='Trad redpoint')
-    sum_ += counts['trad_redpoints']
-    plt.barh(range(1, 25), counts['sport_flashes'], left=sum_, color='#D10000', label='Sport flash')
-    sum_ += counts['sport_flashes']
-    plt.barh(range(1, 25), counts['sport_redpoints'], left=sum_, color='#FF2400', label='Sport redpoint')
-    sum_ += counts['sport_redpoints']
-    #plt.barh(range(1, 25), sport_redpoints, left = trad_onsights + sport_onsights + trad_flashes + sport_flashes + trad_redpoints, color='#FF00FF')
-    #plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='#FA86C4', label='Pinkpoint (sport or trad)')
-    #plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='#FEC5E5', label='Pinkpoint (sport or trad)')
-    plt.barh(range(1, 25), counts['pinkpoints'], left=sum_, color='#FC46AA', label='Pinkpoint (sport or trad)')
-    sum_ += counts['pinkpoints']
-    plt.barh(range(1, 25), counts['cleans'], left=sum_, color='xkcd:sky blue', label='Clean lead (yoyo, simulclimbing)')
-    sum_ += counts['cleans']
-    plt.barh(range(1, 25), counts['clean_seconds'], left=sum_, color='#FFA500', label='Clean second')
-    sum_ += counts['clean_seconds']
-    plt.barh(range(1, 25), counts['clean_topropes'], left=sum_, color='#FFFF00', label='Clean toprope')
-    sum_ += counts['clean_topropes']
-    plt.barh(range(1, 25), counts['aid'], left=sum_, color='black', label='Aid')
-    sum_ += counts['aid']
-    plt.barh(range(1, 25), counts['battle_to_top'], left=sum_, color='gray', label='Battle to top (hangdog, second/toprope weighting rope)')
-
-    _ = ax.legend(loc='center', bbox_to_anchor=(0.5, -0.10), shadow=False, ncol=6)
-
-    plt.show()
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument('csv', help='Your logbook from thecrag.com in CSV format.')
 
@@ -276,4 +220,3 @@ if __name__ == '__main__':
     breakpoint()
     df = prepare_df(df)
     breakpoint()
-    create_stack_chart(df)

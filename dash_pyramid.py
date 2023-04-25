@@ -57,6 +57,7 @@ def parse_contents(contents, filename, date):
 
     fig = px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h', hover_data=["Route Name", 'Ascent Date', "Comment"], color_discrete_map={
                 "Trad onsight": "#036611",
+                "Onsight solo": "#036611",
                 "Sport onsight": "#06b91f",
                 "Second onsight": "#07db24",
                 "Top rope onsight": "#06fc28",
@@ -65,6 +66,7 @@ def parse_contents(contents, filename, date):
                 "Second flash": "#ffcc00",
                 "Top rope flash": "#ffff00",
                 "Trad red point": "#990000",
+                "Solo": "#990000",
                 "Sport red point": "#ff0000",
                 "Pink point": "#ff33cc",
                 "Second clean": "#cc66ff",
