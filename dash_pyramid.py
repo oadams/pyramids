@@ -55,7 +55,8 @@ def parse_contents(contents, filename, date):
     df = prepare_df(df)
     df = df.drop(['Ascent Label', 'Ascent ID', 'Ascent Link', 'Ascent Grade', 'Route Gear Style', 'Ascent Height', 'Route Height', 'Country Link', 'Crag Link'], axis=1)
 
-    fig = px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h', hover_data=["Route Name", 'Ascent Date', "Comment"], color_discrete_map={
+    fig = px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h',
+                 hover_data=['Country', 'Crag Name', "Route Name", 'Ascent Date', "Comment"], color_discrete_map={
                 "Trad onsight": "#036611",
                 "Onsight solo": "#036611",
                 "Sport onsight": "#06b91f",

@@ -156,7 +156,7 @@ def is_ewbanks(ascent_grade: str) -> bool:
         return True
 
 
-def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
+def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
     """ The name of this function suggests it's not yet clear what I want it to do.
     """
 
@@ -216,14 +216,15 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     categories = [category for category in categories if category in df['Ascent Type'].unique()]
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
     df = df.sort_values('Ascent Type')
-    df = df.drop_duplicates(['Route ID'])
+    if drop_duplicates:
+        df = df.drop_duplicates(['Route ID'])
     # Update categories because dash will complain if we have categories with no values
     categories = [category for category in categories if category in df['Ascent Type'].unique()]
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
 
     # Just setting ascent grade to always be the route grade.
     df['Ascent Grade'] = df['Route Grade']
-    # Strip R ratings. Currently this needs to happen before check for Ewbanks.
+    # Strip R ratings.
     df['Ascent Grade'] = df['Ascent Grade'].apply(lambda x: x.strip(' R') if isinstance(x, str)
                                                   else x)
     # Remove non-Ewbanks/YSD graded stuff.
@@ -239,6 +240,9 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     # just using whole routes but I would prefer it if the output was per-pitch
 
     # TODO Separate trad from sport and bouldering
+
+    df['Ascent Date'] = pd.to_datetime(df['Ascent Date'])
+    df['Ascent Date'] = df['Ascent Date'].dt.strftime('%d/%m/%Y')
 
     return df
 
