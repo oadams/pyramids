@@ -162,8 +162,6 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
     """ The name of this function suggests it's not yet clear what I want it to do.
     """
 
-    #df = df[df['Ascent Type'].apply(lambda x: clean_free(x)
-    #                                or x in BATTLE_TO_TOP)]
     print("Number of ascents: {}".format(len(df)))
 
     # If the ascent gear style is unknown, then inherit the route gear style

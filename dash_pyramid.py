@@ -36,7 +36,9 @@ app.layout = html.Div([
         # Allow multiple files to be uploaded
         multiple=True
     ),
-    html.Div(id='output-data-upload'),
+    dcc.Loading(
+        html.Div(id='output-data-upload')
+    ),
 ])
 
 def parse_contents(contents, filename, date):
