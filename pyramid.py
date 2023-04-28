@@ -227,11 +227,14 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
     # Strip R ratings.
     df['Ascent Grade'] = df['Ascent Grade'].apply(lambda x: x.strip(' R') if isinstance(x, str)
                                                   else x)
+    # Strip X ratings.
+    df['Ascent Grade'] = df['Ascent Grade'].apply(lambda x: x.strip(' X') if isinstance(x, str)
+                                                  else x)
     # Remove non-Ewbanks/YSD graded stuff.
     df['Ewbanks Grade'] = df['Ascent Grade'].apply(lambda x: convert_to_ewbanks(x) if
                                                    grade_supported(x) else None)
     print('NA grades:')
-    print(df[df['Ewbanks Grade'].isna()])
+    print(df[df['Ewbanks Grade'].isna()][['Route Name', 'Ascent Grade']])
     df = df.dropna(subset=['Ewbanks Grade'])
 
     df['num'] = 1
