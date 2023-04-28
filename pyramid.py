@@ -158,20 +158,8 @@ def is_ewbanks(ascent_grade: str) -> bool:
         return True
 
 
-def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
-    """ The name of this function suggests it's not yet clear what I want it to do.
-    """
-
-    print("Number of ascents: {}".format(len(df)))
-
-    # Drop targets, marks and hits, which are all non-climbs.
-    df = df[df['Ascent Type'] != 'Target']
-    df = df[df['Ascent Type'] != 'Mark']
-    df = df[df['Ascent Type'] != 'Hit']
-
-    # If the ascent gear style is unknown, then inherit the route gear style
-    df.loc[df['Ascent Gear Style'].isna(), 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'].isna(), 'Route Gear Style']
-    df.loc[df['Ascent Gear Style'] == 'Unknown', 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'] == 'Unknown', 'Route Gear Style']
+def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
+    """ Handle discrepancy between old ticking interface and new ticking interface on thecrag."""
 
     # If the Ascent Gear Type is Top rope or second, then change the Ascent type
     # to conform to the old format This is to account for the new ticking
@@ -199,7 +187,25 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
     # TODO Handle 'Second'/'tick' etc.
     # TODO Look at this and sort out edge cases df[['Ascent Type', 'Ascent Gear Style']].drop_duplicates(). There might be some cases that are missing.
     # TODO Now that there is a second flash and second onsight possibility, This code should go through teh log history and flag second cleans as second flashes or onsights.
-    # TODO I'm not including soloing here. Scrange's onsight solo of tullah's tease is not being rendered.
+    return df
+
+
+def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
+    """ The name of this function suggests it's not yet clear what I want it to do.
+    """
+
+    print("Number of ascents: {}".format(len(df)))
+
+    # Drop targets, marks and hits, which are all non-climbs.
+    df = df[df['Ascent Type'] != 'Target']
+    df = df[df['Ascent Type'] != 'Mark']
+    df = df[df['Ascent Type'] != 'Hit']
+
+    # If the ascent gear style is unknown, then inherit the route gear style
+    df.loc[df['Ascent Gear Style'].isna(), 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'].isna(), 'Route Gear Style']
+    df.loc[df['Ascent Gear Style'] == 'Unknown', 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'] == 'Unknown', 'Route Gear Style']
+
+    df = reconcile_old_ticks_with_new_ticks(df)
 
     # Here we impose an ordering on ascent types, sort by them and then remove
     # duplicate ascents so that only the best ascent of a given climb is used
