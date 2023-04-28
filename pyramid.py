@@ -220,7 +220,7 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
     """
     categories = ['Trad onsight', 'Onsight solo', 'Sport onsight', 'Second onsight', 'Top rope onsight',
                   'Trad flash', 'Sport flash', 'Second flash', 'Top rope flash',
-                  'Trad red point', 'Solo', 'Sport red point', 'Ground up red point', 'Pink point', 'Second clean', 'Top rope clean',
+                  'Trad red point', 'Solo', 'Sport red point', 'Red point', 'Ground up red point', 'Pink point', 'Second clean', 'Top rope clean',
                   'Roped Solo', 'Clean', 'Aid', 'Aid solo', 'Hang dog',
                   'Second with rest', 'Top rope with rest', 'Attempt', 'Retreat', 'Working', 'Onsight', 'Flash', 'Top rope', 'Lead', 'Tick', 'All free with rest']
     print(categories)

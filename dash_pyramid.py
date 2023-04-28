@@ -55,6 +55,7 @@ COLOR_MAP = {
     "Trad red point": "#990000",
     "Solo": "#990000",
     "Sport red point": "#ff0000",
+    "Red point": "#ff0000",
     "Ground up red point": "#ff1188",
     "Pink point": "#ff33cc",
     "Second clean": "#cc66ff",
