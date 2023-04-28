@@ -36,6 +36,7 @@ app.layout = html.Div([
         # Allow multiple files to be uploaded
         multiple=True
     ),
+    dcc.RadioItems(['Unique', 'Duplicates'], 'Unique', id='unique-radio'),
     dcc.Loading(
         html.Div(id='output-data-upload')
     ),
@@ -72,7 +73,7 @@ COLOR_MAP = {
     "Tick": "#66cccc",
 }
 
-def parse_contents(contents, filename, date):
+def parse_contents(contents, filename, date, unique):
     content_type, content_string = contents.split(',')
 
     decoded = base64.b64decode(content_string)
@@ -86,7 +87,7 @@ def parse_contents(contents, filename, date):
             'There was an error processing this file.'
         ])
 
-    df = prepare_df(df)
+    df = prepare_df(df, drop_duplicates=unique)
     df = df.drop(['Ascent Label', 'Ascent ID', 'Ascent Link', 'Ascent Grade', 'Route Gear Style', 'Ascent Height', 'Route Height', 'Country Link', 'Crag Link'], axis=1)
 
     color_map = {}
@@ -126,11 +127,12 @@ def parse_contents(contents, filename, date):
 @app.callback(Output('output-data-upload', 'children'),
               Input('upload-data', 'contents'),
               State('upload-data', 'filename'),
-              State('upload-data', 'last_modified'))
-def update_output(list_of_contents, list_of_names, list_of_dates):
+              State('upload-data', 'last_modified'),
+              Input('unique-radio', 'value'))
+def update_output(list_of_contents, list_of_names, list_of_dates, unique):
     if list_of_contents is not None:
         children = [
-            parse_contents(c, n, d) for c, n, d in
+            parse_contents(c, n, d, unique=='Unique') for c, n, d in
             zip(list_of_contents, list_of_names, list_of_dates)]
         return children
 
