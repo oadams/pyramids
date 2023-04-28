@@ -41,6 +41,33 @@ app.layout = html.Div([
     ),
 ])
 
+COLOR_MAP = {
+    "Trad onsight": "#036611",
+    "Onsight solo": "#036611",
+    "Sport onsight": "#06b91f",
+    "Second onsight": "#07db24",
+    "Top rope onsight": "#06fc28",
+    "Trad flash": "#FF6600",
+    "Sport flash": "#FF9900",
+    "Second flash": "#ffcc00",
+    "Top rope flash": "#ffff00",
+    "Trad red point": "#990000",
+    "Solo": "#990000",
+    "Sport red point": "#ff0000",
+    "Pink point": "#ff33cc",
+    "Second clean": "#cc66ff",
+    "Top rope clean": "#6666ff",
+    "Roped Solo": "#3333cc",
+    "Aid": "#000066",
+    "Hang dog": "#666666",
+    "Second with rest": "#999999",
+    "Top rope with rest": "#cccccc",
+    "All free with rest": "#cccccc",
+    "Attempt": "#cccccc",
+    "Clean": "#6666ff",
+    "Tick": "#66cccc",
+}
+
 def parse_contents(contents, filename, date):
     content_type, content_string = contents.split(',')
 
@@ -58,37 +85,15 @@ def parse_contents(contents, filename, date):
     df = prepare_df(df)
     df = df.drop(['Ascent Label', 'Ascent ID', 'Ascent Link', 'Ascent Grade', 'Route Gear Style', 'Ascent Height', 'Route Height', 'Country Link', 'Crag Link'], axis=1)
 
+    color_map = {}
+    for ascent_type in df['Ascent Type'].unique():
+        if ascent_type in COLOR_MAP:
+            color_map[ascent_type] = COLOR_MAP[ascent_type]
+        else:
+            color_map[ascent_type] = "#66cccc"
     fig = px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h',
-                 hover_data=['Country', 'Crag Name', "Route Name", 'Ascent Date', "Comment"], color_discrete_map={
-                "Trad onsight": "#036611",
-                "Onsight solo": "#036611",
-                "Sport onsight": "#06b91f",
-                "Second onsight": "#07db24",
-                "Top rope onsight": "#06fc28",
-                "Trad flash": "#FF6600",
-                "Sport flash": "#FF9900",
-                "Second flash": "#ffcc00",
-                "Top rope flash": "#ffff00",
-                "Trad red point": "#990000",
-                "Solo": "#990000",
-                "Sport red point": "#ff0000",
-                "Pink point": "#ff33cc",
-                "Second clean": "#cc66ff",
-                "Top rope clean": "#6666ff",
-                "Roped Solo": "#3333cc",
-                "Aid": "#000066",
-                "Hang dog": "#666666",
-                "Second with rest": "#999999",
-                "Top rope with rest": "#cccccc",
-                "All free with rest": "#cccccc",
-                "Attempt": "#cccccc",
-                "Clean": "#6666ff",
-                "Tick": "#66cccc",
-                "Lead": "#66cccc",
-                "Top rope": "#66cccc",
-                "Onsight": "#6666ff",
-                "Flash": "#6666ff",
-                })
+                 hover_data=['Country', 'Crag Name', "Route Name", 'Ascent Date', "Comment"],
+                 color_discrete_map=color_map)
 
     fig.update_layout(
         yaxis = dict(
