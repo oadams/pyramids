@@ -5,6 +5,7 @@ Needs to be cleaned up. Tests and assertions need to be written because its poss
 """
 
 import argparse
+import textwrap
 
 import pandas as pd  # type: ignore
 
@@ -17,7 +18,8 @@ THECRAG_NOT_ON = set(['Attempt', 'Hang dog', 'Retreat', 'Target',
 # are assumed to have involved weighting the rope.
 NOT_ON = THECRAG_NOT_ON.union({'Tick', 'Aid solo', 'Top rope', 'Second'})
 
-BATTLE_TO_TOP = set(['Hang dog', 'Top rope with rest', 'Second with rest'])
+BATTLE_TO_TOP = set(['Hang dog', 'Top rope with rest', 'Second with rest', 'All free with rest',
+                     'Tick'])
 
 
 def clean_free(ascent_type: str) -> bool:
@@ -160,8 +162,9 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
     """ The name of this function suggests it's not yet clear what I want it to do.
     """
 
-    df = df[df['Ascent Type'].apply(lambda x: clean_free(x)
-                                    or x in BATTLE_TO_TOP)]
+    breakpoint()
+    #df = df[df['Ascent Type'].apply(lambda x: clean_free(x)
+    #                                or x in BATTLE_TO_TOP)]
     print("Number of ascents: {}".format(len(df)))
 
     # If the ascent gear style is unknown, then inherit the route gear style
@@ -210,17 +213,18 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
                   'Trad flash', 'Sport flash', 'Second flash', 'Top rope flash',
                   'Trad red point', 'Solo', 'Sport red point', 'Pink point', 'Second clean', 'Top rope clean',
                   'Roped Solo', 'Clean', 'Aid', 'Hang dog',
-                  'Second with rest', 'Top rope with rest', 'Attempt']
+                  'Second with rest', 'Top rope with rest', 'Attempt', 'Onsight', 'Flash', 'Top rope', 'Lead', 'Tick', 'All free with rest']
+    breakpoint()
     print(categories)
     print(len(categories))
     categories = [category for category in categories if category in df['Ascent Type'].unique()]
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
     df = df.sort_values('Ascent Type')
+    print("Number of ascents after handling categories: {}".format(len(df)))
     if drop_duplicates:
         df = df.drop_duplicates(['Route ID'])
-    # Update categories because dash will complain if we have categories with no values
-    categories = [category for category in categories if category in df['Ascent Type'].unique()]
-    df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
+    print("Number of ascents after dropping duplicates: {}".format(len(df)))
+    breakpoint()
 
     # Just setting ascent grade to always be the route grade.
     df['Ascent Grade'] = df['Route Grade']
@@ -243,6 +247,14 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
 
     df['Ascent Date'] = pd.to_datetime(df['Ascent Date'])
     df['Ascent Date'] = df['Ascent Date'].dt.strftime('%d/%m/%Y')
+    df['Comment'] = df['Comment'].apply(lambda x: textwrap.fill(str(x)))
+
+
+    # Update categories because dash will complain if we have categories with no values
+    categories = [category for category in categories if category in df['Ascent Type'].unique()]
+    df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
+
+    print("Number of ascents at end of preprocessing {}".format(len(df)))
 
     return df
 

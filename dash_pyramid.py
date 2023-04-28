@@ -20,7 +20,8 @@ app.layout = html.Div([
         id='upload-data',
         children=html.Div([
             'Drag and Drop or ',
-            html.A('Select Files')
+            html.A('Select'),
+            ' your CSV logbook from thecrag.com'
         ]),
         style={
             'width': '100%',
@@ -77,8 +78,13 @@ def parse_contents(contents, filename, date):
                 "Hang dog": "#666666",
                 "Second with rest": "#999999",
                 "Top rope with rest": "#cccccc",
-                "Attempt": "#e6e7e8",
+                "All free with rest": "#cccccc",
+                "Attempt": "#cccccc",
                 "Clean": "#6666ff",
+                "Tick": "#6666ff",
+                "Lead": "#6666ff",
+                "Onsight": "#6666ff",
+                "Flash": "#6666ff",
                 })
 
     fig.update_layout(
@@ -89,11 +95,18 @@ def parse_contents(contents, filename, date):
         )
     )
 
+    config = {'displayModeBar': False,
+              'editSelection': False,
+              'editable': False,
+              'scrollZoom': False,
+              'showAxisDragHandles': False,}
+
+
     return html.Div([
         html.H5(filename),
-
+        #dcc.RadioItems(['Unique', 'Duplicates'], 'Unique'),
         #dash_table.DataTable(data=df.to_dict('records'), page_size=10),
-        dcc.Graph(figure=fig)
+        dcc.Graph(figure=fig, config=config)
     ])
 
 @app.callback(Output('output-data-upload', 'children'),
