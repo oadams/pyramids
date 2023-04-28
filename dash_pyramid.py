@@ -81,8 +81,9 @@ def parse_contents(contents, filename, date):
                 "All free with rest": "#cccccc",
                 "Attempt": "#cccccc",
                 "Clean": "#6666ff",
-                "Tick": "#6666ff",
-                "Lead": "#6666ff",
+                "Tick": "#66cccc",
+                "Lead": "#66cccc",
+                "Top rope": "#66cccc",
                 "Onsight": "#6666ff",
                 "Flash": "#6666ff",
                 })
