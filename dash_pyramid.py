@@ -97,14 +97,16 @@ def parse_contents(contents, filename, date):
             color_map[ascent_type] = "#66cccc"
     fig = px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h',
                  hover_data=['Country', 'Crag Name', "Route Name", 'Ascent Date', "Comment"],
-                 color_discrete_map=color_map)
+                 color_discrete_map=color_map,
+            labels = {'num': 'Number of ascents'},
+    )
 
     fig.update_layout(
         yaxis = dict(
             tickmode = 'linear',
             tick0 = 1,
-            dtick = 1
-        )
+            dtick = 1,
+        ),
     )
 
     config = {'displayModeBar': False,
