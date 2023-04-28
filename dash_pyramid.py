@@ -37,6 +37,7 @@ app.layout = html.Div([
         multiple=True
     ),
     dcc.RadioItems(['Unique', 'Duplicates'], 'Unique', id='unique-radio'),
+    dcc.RadioItems(['All', 'Trad', 'Sport', 'Second', 'Top rope'], 'All', id='ascent-gear-style'),
     dcc.Loading(
         html.Div(id='output-data-upload')
     ),
@@ -73,7 +74,7 @@ COLOR_MAP = {
     "Tick": "#66cccc",
 }
 
-def parse_contents(contents, filename, date, unique):
+def parse_contents(contents, filename, date, unique, ascent_gear_style):
     content_type, content_string = contents.split(',')
 
     decoded = base64.b64decode(content_string)
@@ -87,7 +88,7 @@ def parse_contents(contents, filename, date, unique):
             'There was an error processing this file.'
         ])
 
-    df = prepare_df(df, drop_duplicates=unique)
+    df = prepare_df(df, drop_duplicates=unique, ascent_gear_style=ascent_gear_style)
     df = df.drop(['Ascent Label', 'Ascent ID', 'Ascent Link', 'Ascent Grade', 'Route Gear Style', 'Ascent Height', 'Route Height', 'Country Link', 'Crag Link'], axis=1)
 
     color_map = {}
@@ -128,11 +129,12 @@ def parse_contents(contents, filename, date, unique):
               Input('upload-data', 'contents'),
               State('upload-data', 'filename'),
               State('upload-data', 'last_modified'),
-              Input('unique-radio', 'value'))
-def update_output(list_of_contents, list_of_names, list_of_dates, unique):
+              Input('unique-radio', 'value'),
+              Input('ascent-gear-style', 'value'))
+def update_output(list_of_contents, list_of_names, list_of_dates, unique, ascent_gear_style):
     if list_of_contents is not None:
         children = [
-            parse_contents(c, n, d, unique=='Unique') for c, n, d in
+            parse_contents(c, n, d, unique == 'Unique', ascent_gear_style) for c, n, d in
             zip(list_of_contents, list_of_names, list_of_dates)]
         return children
 

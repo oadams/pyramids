@@ -158,21 +158,7 @@ def is_ewbanks(ascent_grade: str) -> bool:
         return True
 
 
-def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
-    """ The name of this function suggests it's not yet clear what I want it to do.
-    """
-
-    print("Number of ascents: {}".format(len(df)))
-
-    # Drop targets, marks and hits, which are all non-climbs.
-    df = df[df['Ascent Type'] != 'Target']
-    df = df[df['Ascent Type'] != 'Mark']
-    df = df[df['Ascent Type'] != 'Hit']
-
-    # If the ascent gear style is unknown, then inherit the route gear style
-    df.loc[df['Ascent Gear Style'].isna(), 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'].isna(), 'Route Gear Style']
-    df.loc[df['Ascent Gear Style'] == 'Unknown', 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'] == 'Unknown', 'Route Gear Style']
-
+def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
     # If the Ascent Gear Type is Top rope or second, then change the Ascent type
     # to conform to the old format This is to account for the new ticking
     # interface on thecrag.
@@ -199,35 +185,59 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
     # TODO Handle 'Second'/'tick' etc.
     # TODO Look at this and sort out edge cases df[['Ascent Type', 'Ascent Gear Style']].drop_duplicates(). There might be some cases that are missing.
     # TODO Now that there is a second flash and second onsight possibility, This code should go through teh log history and flag second cleans as second flashes or onsights.
-    # TODO I'm not including soloing here. Scrange's onsight solo of tullah's tease is not being rendered.
+    return df
+
+
+def prepare_df(df: pd.DataFrame, drop_duplicates=True, ascent_gear_style='All') -> pd.DataFrame:
+    """ Prepares a dataframe for consumption by the dash app.
+    """
+
+    # TODO use logging here
+    print('Number of ascents: {}'.format(len(df)))
+
+    # Drop targets, marks and hits, which are all non-climbs.
+    df = df[df['Ascent Type'] != 'Target']
+    df = df[df['Ascent Type'] != 'Mark']
+    df = df[df['Ascent Type'] != 'Hit']
+
+    # If the ascent gear style is unknown, then inherit the route gear style
+    df.loc[df['Ascent Gear Style'].isna(), 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'].isna(), 'Route Gear Style']
+    df.loc[df['Ascent Gear Style'] == 'Unknown', 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'] == 'Unknown', 'Route Gear Style']
+
+    df = reconcile_old_ticks_with_new_ticks(df)
+
+    if ascent_gear_style == 'Trad':
+        df = df[df['Ascent Type'].isin(['Trad onsight', 'Onsight solo', 'Trad flash', 'Trad red point'])]
+    elif ascent_gear_style == 'Sport':
+        df = df[df['Ascent Type'].isin(['Sport onsight', 'Sport flash', 'Sport red point', 'Pink point'])]
+    elif ascent_gear_style == 'Second':
+        df = df[df['Ascent Type'].isin(['Second onsight', 'Second flash', 'Second clean', 'Second with rest', 'Second'])]
+    elif ascent_gear_style == 'Top rope':
+        df = df[df['Ascent Type'].isin(['Top rope onsight', 'Top rope flash', 'Top rope clean', 'Top rope with rest', 'Top rope'])]
 
     # Here we impose an ordering on ascent types, sort by them and then remove
     # duplicate ascents so that only the best ascent of a given climb is used
     # in the pyramid.
 
-    # TODO Use this commented ordering as an alternative ordering when a flag is set.
-    """
-    categories = ['Trad onsight', 'Trad flash', 'Sport onsight', 'Sport flash', 'Trad red point',  'Sport red point', 'Pink point', 'Second onsight', 'Second flash',
-                  'Top rope onsight', 'Top rope flash', 'Second clean',
-                  'Top rope clean', 'Roped Solo', 'Clean', 'Hang dog', 'Aid',
-                  'Top rope with rest', 'Second with rest']
-    """
     categories = ['Trad onsight', 'Onsight solo', 'Sport onsight', 'Second onsight', 'Top rope onsight',
                   'Trad flash', 'Sport flash', 'Second flash', 'Top rope flash',
                   'Trad red point', 'Solo', 'Sport red point', 'Ground up red point', 'Pink point', 'Second clean', 'Top rope clean',
                   'Roped Solo', 'Clean', 'Aid', 'Aid solo', 'Hang dog',
                   'Second with rest', 'Top rope with rest', 'Attempt', 'Retreat', 'Working', 'Onsight', 'Flash', 'Top rope', 'Lead', 'Tick', 'All free with rest']
-    print(categories)
-    print(len(categories))
+    # Set the dataframe's categories to be the set of ascent types found in the dataframe and
+    # maintain the same ordering as this predefined list of categories. Any other ascent types not
+    # defined by the ordering are tacked on to the end.
     categories = [category for category in categories if category in df['Ascent Type'].unique()]
     for category in df['Ascent Type'].unique():
         if category not in categories:
             categories.append(category)
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
     df = df.sort_values('Ascent Type')
+    # TODO use loggin
     print("Number of ascents after handling categories: {}".format(len(df)))
     if drop_duplicates:
         df = df.drop_duplicates(['Route ID'])
+    # TODO use logging
     print("Number of ascents after dropping duplicates: {}".format(len(df)))
 
     # Just setting ascent grade to always be the route grade.
