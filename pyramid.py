@@ -163,9 +163,11 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
     """
 
     print("Number of ascents: {}".format(len(df)))
-    
-    # Drop targets
+
+    # Drop targets, marks and hits, which are all non-climbs.
     df = df[df['Ascent Type'] != 'Target']
+    df = df[df['Ascent Type'] != 'Mark']
+    df = df[df['Ascent Type'] != 'Hit']
 
     # If the ascent gear style is unknown, then inherit the route gear style
     df.loc[df['Ascent Gear Style'].isna(), 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'].isna(), 'Route Gear Style']
