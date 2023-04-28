@@ -163,6 +163,9 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
     """
 
     print("Number of ascents: {}".format(len(df)))
+    
+    # Drop targets
+    df = df[df['Ascent Type'] != 'Target']
 
     # If the ascent gear style is unknown, then inherit the route gear style
     df.loc[df['Ascent Gear Style'].isna(), 'Ascent Gear Style'] = df.loc[df['Ascent Gear Style'].isna(), 'Route Gear Style']
@@ -209,12 +212,15 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
     """
     categories = ['Trad onsight', 'Onsight solo', 'Sport onsight', 'Second onsight', 'Top rope onsight',
                   'Trad flash', 'Sport flash', 'Second flash', 'Top rope flash',
-                  'Trad red point', 'Solo', 'Sport red point', 'Pink point', 'Second clean', 'Top rope clean',
-                  'Roped Solo', 'Clean', 'Aid', 'Hang dog',
-                  'Second with rest', 'Top rope with rest', 'Attempt', 'Onsight', 'Flash', 'Top rope', 'Lead', 'Tick', 'All free with rest']
+                  'Trad red point', 'Solo', 'Sport red point', 'Ground up red point', 'Pink point', 'Second clean', 'Top rope clean',
+                  'Roped Solo', 'Clean', 'Aid', 'Aid solo', 'Hang dog',
+                  'Second with rest', 'Top rope with rest', 'Attempt', 'Retreat', 'Working', 'Onsight', 'Flash', 'Top rope', 'Lead', 'Tick', 'All free with rest']
     print(categories)
     print(len(categories))
     categories = [category for category in categories if category in df['Ascent Type'].unique()]
+    for category in df['Ascent Type'].unique():
+        if category not in categories:
+            categories.append(category)
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
     df = df.sort_values('Ascent Type')
     print("Number of ascents after handling categories: {}".format(len(df)))
