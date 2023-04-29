@@ -36,7 +36,7 @@ app.layout = html.Div([
         # Allow multiple files to be uploaded
         multiple=True
     ),
-    dcc.RadioItems(['Unique', 'Duplicates'], 'Unique', id='unique-radio'),
+    dcc.RadioItems(['Unique route', 'Unique route+style', 'Duplicates'], 'Unique route', id='unique-radio'),
     dcc.Loading(
         html.Div(id='output-data-upload')
     ),
@@ -88,7 +88,7 @@ def parse_contents(contents, filename, date, unique):
             'There was an error processing this file.'
         ])
 
-    df = prepare_df(df, drop_duplicates=unique)
+    df = prepare_df(df, unique=unique)
     df = df.drop(['Ascent Label', 'Ascent ID', 'Ascent Link', 'Ascent Grade', 'Route Gear Style', 'Ascent Height', 'Route Height', 'Country Link', 'Crag Link'], axis=1)
 
     color_map = {}
@@ -133,7 +133,7 @@ def parse_contents(contents, filename, date, unique):
 def update_output(list_of_contents, list_of_names, list_of_dates, unique):
     if list_of_contents is not None:
         children = [
-            parse_contents(c, n, d, unique=='Unique') for c, n, d in
+            parse_contents(c, n, d, unique) for c, n, d in
             zip(list_of_contents, list_of_names, list_of_dates)]
         return children
 

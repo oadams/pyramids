@@ -190,7 +190,7 @@ def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
+def prepare_df(df: pd.DataFrame, unique='Unique route') -> pd.DataFrame:
     """ The name of this function suggests it's not yet clear what I want it to do.
     """
 
@@ -232,8 +232,10 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True) -> pd.DataFrame:
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
     df = df.sort_values('Ascent Type')
     print("Number of ascents after handling categories: {}".format(len(df)))
-    if drop_duplicates:
+    if unique == 'Unique route':
         df = df.drop_duplicates(['Route ID'])
+    elif unique == 'Unique route+style':
+        df = df.drop_duplicates(['Route ID', 'Ascent Type'])
     print("Number of ascents after dropping duplicates: {}".format(len(df)))
 
     # Just setting ascent grade to always be the route grade.
