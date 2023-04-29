@@ -159,6 +159,8 @@ def is_ewbanks(ascent_grade: str) -> bool:
 
 
 def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
+    """ Handle discrepancy between old ticking interface and new ticking interface on thecrag."""
+
     # If the Ascent Gear Type is Top rope or second, then change the Ascent type
     # to conform to the old format This is to account for the new ticking
     # interface on thecrag.
@@ -173,12 +175,12 @@ def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Trad red point'
     df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Trad onsight'
     df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Trad flash'
+    df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Hang dog'), 'Ascent Type'] = 'Trad lead with rest'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Sport red point'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Sport onsight'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Sport flash'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Sport red point'
-    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Sport onsight'
-    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Sport flash'
+    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Hang dog'), 'Ascent Type'] = 'Sport lead with rest'
     df.loc[(df['Ascent Gear Style'] == 'Free solo') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Solo'
     df.loc[(df['Ascent Gear Style'] == 'Free solo') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Onsight solo'
     # TODO Handle other free solo subvariants.
@@ -188,12 +190,12 @@ def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def prepare_df(df: pd.DataFrame, drop_duplicates=True, ascent_gear_style='All') -> pd.DataFrame:
+def prepare_df(df: pd.DataFrame, unique='Unique route', ascent_gear_style='All') -> pd.DataFrame:
     """ Prepares a dataframe for consumption by the dash app.
     """
 
     # TODO use logging here
-    print('Number of ascents: {}'.format(len(df)))
+    print("Number of ascents: {}".format(len(df)))
 
     # Drop targets, marks and hits, which are all non-climbs.
     df = df[df['Ascent Type'] != 'Target']
@@ -221,8 +223,8 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True, ascent_gear_style='All') 
 
     categories = ['Trad onsight', 'Onsight solo', 'Sport onsight', 'Second onsight', 'Top rope onsight',
                   'Trad flash', 'Sport flash', 'Second flash', 'Top rope flash',
-                  'Trad red point', 'Solo', 'Sport red point', 'Ground up red point', 'Pink point', 'Second clean', 'Top rope clean',
-                  'Roped Solo', 'Clean', 'Aid', 'Aid solo', 'Hang dog',
+                  'Trad red point', 'Solo', 'Sport red point', 'Red point', 'Ground up red point', 'Pink point', 'Second clean', 'Top rope clean',
+                  'Roped Solo', 'Clean', 'Aid', 'Aid solo', 'Trad lead with rest', 'Sport lead with rest', 'Hang dog',
                   'Second with rest', 'Top rope with rest', 'Attempt', 'Retreat', 'Working', 'Onsight', 'Flash', 'Top rope', 'Lead', 'Tick', 'All free with rest']
     # Set the dataframe's categories to be the set of ascent types found in the dataframe and
     # maintain the same ordering as this predefined list of categories. Any other ascent types not
@@ -235,8 +237,10 @@ def prepare_df(df: pd.DataFrame, drop_duplicates=True, ascent_gear_style='All') 
     df = df.sort_values('Ascent Type')
     # TODO use loggin
     print("Number of ascents after handling categories: {}".format(len(df)))
-    if drop_duplicates:
+    if unique == 'Unique route':
         df = df.drop_duplicates(['Route ID'])
+    elif unique == 'Unique route+style':
+        df = df.drop_duplicates(['Route ID', 'Ascent Type'])
     # TODO use logging
     print("Number of ascents after dropping duplicates: {}".format(len(df)))
 

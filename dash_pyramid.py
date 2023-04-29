@@ -36,7 +36,8 @@ app.layout = html.Div([
         # Allow multiple files to be uploaded
         multiple=True
     ),
-    dcc.RadioItems(['Unique', 'Duplicates'], 'Unique', id='unique-radio'),
+    dcc.RadioItems(['Unique route', 'Unique route+style', 'Duplicates'], 'Unique route', id='unique-radio'),
+    html.P('Ascent Style:'),
     dcc.RadioItems(['All', 'Trad', 'Sport', 'Second', 'Top rope'], 'All', id='ascent-gear-style'),
     dcc.Loading(
         html.Div(id='output-data-upload')
@@ -56,6 +57,7 @@ COLOR_MAP = {
     "Trad red point": "#990000",
     "Solo": "#990000",
     "Sport red point": "#ff0000",
+    "Red point": "#ff0000",
     "Ground up red point": "#ff1188",
     "Pink point": "#ff33cc",
     "Second clean": "#cc66ff",
@@ -63,6 +65,8 @@ COLOR_MAP = {
     "Roped Solo": "#3333cc",
     "Aid": "#000066",
     "Aid solo": "#000066",
+    "Trad lead with rest": "#666666",
+    "Sport lead with rest": "#666666",
     "Hang dog": "#666666",
     "Second with rest": "#999999",
     "Top rope with rest": "#999999",
@@ -88,7 +92,8 @@ def parse_contents(contents, filename, date, unique, ascent_gear_style):
             'There was an error processing this file.'
         ])
 
-    df = prepare_df(df, drop_duplicates=unique, ascent_gear_style=ascent_gear_style)
+    df = prepare_df(df, unique=unique, ascent_gear_style=ascent_gear_style)
+
     df = df.drop(['Ascent Label', 'Ascent ID', 'Ascent Link', 'Ascent Grade', 'Route Gear Style', 'Ascent Height', 'Route Height', 'Country Link', 'Crag Link'], axis=1)
 
     color_map = {}
@@ -134,8 +139,7 @@ def parse_contents(contents, filename, date, unique, ascent_gear_style):
 def update_output(list_of_contents, list_of_names, list_of_dates, unique, ascent_gear_style):
     if list_of_contents is not None:
         children = [
-            parse_contents(c, n, d, unique == 'Unique', ascent_gear_style) for c, n, d in
-            zip(list_of_contents, list_of_names, list_of_dates)]
+            parse_contents(c, n, d, unique, ascent_gear_style) for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)]
         return children
 
 if __name__ == '__main__':
