@@ -1,6 +1,7 @@
 import base64
 import datetime
 import io
+import textwrap
 
 import dash
 from dash.dependencies import Input, Output, State
@@ -96,6 +97,8 @@ def parse_contents(contents, filename, date, unique, ascent_gear_style):
 
     df = df.drop(['Ascent Label', 'Ascent ID', 'Ascent Link', 'Ascent Grade', 'Route Gear Style', 'Ascent Height', 'Route Height', 'Country Link', 'Crag Link'], axis=1)
 
+    df['Comment'] = df['Comment'].apply(lambda x: '<br>'.join(textwrap.wrap(str(x))))
+
     color_map = {}
     for ascent_type in df['Ascent Type'].unique():
         if ascent_type in COLOR_MAP:
@@ -107,6 +110,12 @@ def parse_contents(contents, filename, date, unique, ascent_gear_style):
                  color_discrete_map=color_map,
             labels = {'num': 'Number of ascents'},
     )
+
+    fig.update_traces(hovertemplate=('Ascent Date: %{customdata[3]}<br>'
+                                     'Route Name: %{customdata[2]}<br>'
+                                     'Crag Name: %{customdata[1]}<br>'
+                                     'Country: %{customdata[0]}<br>'
+                                     'Comment: %{customdata[4]}'))
 
     fig.update_layout(
         yaxis = dict(

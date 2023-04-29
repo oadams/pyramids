@@ -5,7 +5,6 @@ Needs to be cleaned up. Tests and assertions need to be written because its poss
 """
 
 import argparse
-import textwrap
 
 import pandas as pd  # type: ignore
 
@@ -268,7 +267,6 @@ def prepare_df(df: pd.DataFrame, unique='Unique route', ascent_gear_style='All')
 
     df['Ascent Date'] = pd.to_datetime(df['Ascent Date'])
     df['Ascent Date'] = df['Ascent Date'].dt.strftime('%d/%m/%Y')
-    df['Comment'] = df['Comment'].apply(lambda x: textwrap.fill(str(x)))
 
 
     # Update categories because dash will complain if we have categories with no values
