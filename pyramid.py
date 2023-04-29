@@ -175,12 +175,12 @@ def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Trad red point'
     df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Trad onsight'
     df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Trad flash'
+    df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Hang dog'), 'Ascent Type'] = 'Trad lead with rest'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Sport red point'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Sport onsight'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Sport flash'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Sport red point'
-    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Sport onsight'
-    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Sport flash'
+    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Hang dog'), 'Ascent Type'] = 'Sport lead with rest'
     df.loc[(df['Ascent Gear Style'] == 'Free solo') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Solo'
     df.loc[(df['Ascent Gear Style'] == 'Free solo') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Onsight solo'
     # TODO Handle other free solo subvariants.
@@ -221,7 +221,7 @@ def prepare_df(df: pd.DataFrame, unique='Unique route') -> pd.DataFrame:
     categories = ['Trad onsight', 'Onsight solo', 'Sport onsight', 'Second onsight', 'Top rope onsight',
                   'Trad flash', 'Sport flash', 'Second flash', 'Top rope flash',
                   'Trad red point', 'Solo', 'Sport red point', 'Red point', 'Ground up red point', 'Pink point', 'Second clean', 'Top rope clean',
-                  'Roped Solo', 'Clean', 'Aid', 'Aid solo', 'Hang dog',
+                  'Roped Solo', 'Clean', 'Aid', 'Aid solo', 'Trad lead with rest', 'Sport lead with rest', 'Hang dog',
                   'Second with rest', 'Top rope with rest', 'Attempt', 'Retreat', 'Working', 'Onsight', 'Flash', 'Top rope', 'Lead', 'Tick', 'All free with rest']
     print(categories)
     print(len(categories))

@@ -63,6 +63,8 @@ COLOR_MAP = {
     "Roped Solo": "#3333cc",
     "Aid": "#000066",
     "Aid solo": "#000066",
+    "Trad lead with rest": "#666666",
+    "Sport lead with rest": "#666666",
     "Hang dog": "#666666",
     "Second with rest": "#999999",
     "Top rope with rest": "#999999",
