@@ -37,8 +37,8 @@ app.layout = html.Div([
         # Allow multiple files to be uploaded
         multiple=True
     ),
-    dcc.RadioItems(['Unique route', 'Unique route+style', 'Duplicates'], 'Unique route', id='unique-radio'),
-    html.P('Ascent Style:'),
+    dcc.RadioItems(['Unique route', 'Unique route x style', 'Duplicates'], 'Unique route', id='unique-radio'),
+    html.B('Ascent Style:'),
     dcc.RadioItems(['All', 'Trad', 'Sport', 'Second', 'Top rope'], 'All', id='ascent-gear-style'),
     dcc.Loading(
         html.Div(id='output-data-upload')
@@ -73,6 +73,10 @@ COLOR_MAP = {
     "Top rope with rest": "#999999",
     "All free with rest": "#999999",
     "Attempt": "#cccccc",
+    "Trad attempt": "#cccccc",
+    "Sport attempt": "#cccccc",
+    "Second attempt": "#cccccc",
+    "Top rope attempt": "#cccccc",
     "Retreat": "#cccccc",
     "Working": "#cccccc",
     "Clean": "#6666ff",
@@ -123,6 +127,11 @@ def parse_contents(contents, filename, date, unique, ascent_gear_style):
             tick0 = 1,
             dtick = 1,
         ),
+        xaxis = dict(
+            tickmode = 'linear',
+            tick0 = 0,
+            dtick = 5,
+        )
     )
 
     config = {'displayModeBar': False,

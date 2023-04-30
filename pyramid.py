@@ -167,18 +167,22 @@ def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[(df['Ascent Gear Style'] == 'Top rope') & (df['Ascent Type'] == 'Clean'), 'Ascent Type'] = 'Top rope clean'
     df.loc[(df['Ascent Gear Style'] == 'Top rope') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Top rope onsight'
     df.loc[(df['Ascent Gear Style'] == 'Top rope') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Top rope flash'
+    df.loc[(df['Ascent Gear Style'] == 'Top rope') & (df['Ascent Type'] == 'Attempt'), 'Ascent Type'] = 'Top rope attempt'
     df.loc[(df['Ascent Gear Style'] == 'Second') & (df['Ascent Type'] == 'Hang dog'), 'Ascent Type'] = 'Second with rest'
     df.loc[(df['Ascent Gear Style'] == 'Second') & (df['Ascent Type'] == 'Clean'), 'Ascent Type'] = 'Second clean'
     df.loc[(df['Ascent Gear Style'] == 'Second') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Second onsight'
     df.loc[(df['Ascent Gear Style'] == 'Second') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Second flash'
+    df.loc[(df['Ascent Gear Style'] == 'Second') & (df['Ascent Type'] == 'Attempt'), 'Ascent Type'] = 'Second attempt'
     df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Trad red point'
     df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Trad onsight'
     df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Trad flash'
     df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Hang dog'), 'Ascent Type'] = 'Trad lead with rest'
+    df.loc[(df['Ascent Gear Style'] == 'Trad') & (df['Ascent Type'] == 'Attempt'), 'Ascent Type'] = 'Trad attempt'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Sport red point'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Sport onsight'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Flash'), 'Ascent Type'] = 'Sport flash'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Sport red point'
+    df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Attempt'), 'Ascent Type'] = 'Sport attempt'
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Hang dog'), 'Ascent Type'] = 'Sport lead with rest'
     df.loc[(df['Ascent Gear Style'] == 'Free solo') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Solo'
     df.loc[(df['Ascent Gear Style'] == 'Free solo') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Onsight solo'
@@ -208,13 +212,13 @@ def prepare_df(df: pd.DataFrame, unique='Unique route', ascent_gear_style='All')
     df = reconcile_old_ticks_with_new_ticks(df)
 
     if ascent_gear_style == 'Trad':
-        df = df[df['Ascent Type'].isin(['Trad onsight', 'Onsight solo', 'Trad flash', 'Trad red point'])]
+        df = df[df['Ascent Type'].isin(['Trad onsight', 'Onsight solo', 'Trad flash', 'Trad red point', 'Solo', 'Trad lead with rest', 'Trad attempt'])]
     elif ascent_gear_style == 'Sport':
-        df = df[df['Ascent Type'].isin(['Sport onsight', 'Sport flash', 'Sport red point', 'Pink point'])]
+        df = df[df['Ascent Type'].isin(['Sport onsight', 'Sport flash', 'Sport red point', 'Pink point', 'Sport lead with rest', 'Sport attempt'])]
     elif ascent_gear_style == 'Second':
-        df = df[df['Ascent Type'].isin(['Second onsight', 'Second flash', 'Second clean', 'Second with rest', 'Second'])]
+        df = df[df['Ascent Type'].isin(['Second onsight', 'Second flash', 'Second clean', 'Second with rest', 'Second', 'Second attempt'])]
     elif ascent_gear_style == 'Top rope':
-        df = df[df['Ascent Type'].isin(['Top rope onsight', 'Top rope flash', 'Top rope clean', 'Top rope with rest', 'Top rope'])]
+        df = df[df['Ascent Type'].isin(['Top rope onsight', 'Top rope flash', 'Top rope clean', 'Top rope with rest', 'Top rope', 'Top rope attempt'])]
 
     # Here we impose an ordering on ascent types, sort by them and then remove
     # duplicate ascents so that only the best ascent of a given climb is used
@@ -224,7 +228,7 @@ def prepare_df(df: pd.DataFrame, unique='Unique route', ascent_gear_style='All')
                   'Trad flash', 'Sport flash', 'Second flash', 'Top rope flash',
                   'Trad red point', 'Solo', 'Sport red point', 'Red point', 'Ground up red point', 'Pink point', 'Second clean', 'Top rope clean',
                   'Roped Solo', 'Clean', 'Aid', 'Aid solo', 'Trad lead with rest', 'Sport lead with rest', 'Hang dog',
-                  'Second with rest', 'Top rope with rest', 'Attempt', 'Retreat', 'Working', 'Onsight', 'Flash', 'Top rope', 'Lead', 'Tick', 'All free with rest']
+                  'Second with rest', 'Top rope with rest', 'Trad attempt', 'Sport attempt', 'Second attempt', 'Top rope attempt', 'Attempt', 'Retreat', 'Working', 'Onsight', 'Flash', 'Top rope', 'Lead', 'Tick', 'All free with rest']
     # Set the dataframe's categories to be the set of ascent types found in the dataframe and
     # maintain the same ordering as this predefined list of categories. Any other ascent types not
     # defined by the ordering are tacked on to the end.
@@ -238,7 +242,7 @@ def prepare_df(df: pd.DataFrame, unique='Unique route', ascent_gear_style='All')
     print("Number of ascents after handling categories: {}".format(len(df)))
     if unique == 'Unique route':
         df = df.drop_duplicates(['Route ID'])
-    elif unique == 'Unique route+style':
+    elif unique == 'Unique route x style':
         df = df.drop_duplicates(['Route ID', 'Ascent Type'])
     # TODO use logging
     print("Number of ascents after dropping duplicates: {}".format(len(df)))
