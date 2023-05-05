@@ -194,11 +194,13 @@ def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def prepare_df(df: pd.DataFrame, unique='Unique route', route_gear_style='All', ascent_gear_style='All', start_date=None,
-               end_date=None) -> pd.DataFrame:
+def prepare_df(df: pd.DataFrame, unique='Unique', route_gear_style='All', ascent_gear_style='All', start_date=None, end_date=None, country=None) -> pd.DataFrame:
     """ Prepares a dataframe for consumption by the dash app.
     """
 
+    country = None
+    if country is not None:
+        df = df[df['Country'] == country]
 
     df['Ascent Date'] = pd.to_datetime(df['Ascent Date'])
     if start_date is not None:
@@ -264,7 +266,7 @@ def prepare_df(df: pd.DataFrame, unique='Unique route', route_gear_style='All', 
     df = df.sort_values('Ascent Type')
     # TODO use loggin
     print("Number of ascents after handling categories: {}".format(len(df)))
-    if unique == 'Unique route':
+    if unique == 'Unique':
         df = df.drop_duplicates(['Route ID'])
     elif unique == 'Unique route x style':
         df = df.drop_duplicates(['Route ID', 'Ascent Type'])

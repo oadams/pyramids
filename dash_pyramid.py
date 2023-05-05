@@ -37,12 +37,17 @@ app.layout = html.Div([
         # Allow multiple files to be uploaded
         multiple=True
     ),
-    dcc.RadioItems(['Unique route', 'Unique route x style', 'Duplicates'], 'Unique route', id='unique-radio'),
+    html.B('Routes:'),
+    dcc.RadioItems(['Unique', 'Duplicates'], 'Unique', id='unique-radio'),
+    html.Br(),
     html.B('Route Gear Style:'),
     dcc.RadioItems(['All', 'Trad', 'Sport'], 'All', id='route-gear-style'),
+    html.Br(),
     html.B('Ascent Style:'),
     dcc.RadioItems(['All', 'Trad', 'Sport', 'Second', 'Top rope'], 'All', id='ascent-gear-style'),
+    html.Br(),
     html.B('Date range:'),
+    html.Br(),
     dcc.DatePickerRange(
         id='date-range',
         min_date_allowed=datetime.date(1900, 1, 1),
@@ -92,7 +97,8 @@ COLOR_MAP = {
     "Tick": "#66cccc",
 }
 
-def parse_contents(contents, filename, date, unique, route_gear_style, ascent_gear_style, start_date, end_date):
+def parse_contents(contents, filename, date, unique, route_gear_style, ascent_gear_style,
+                   start_date, end_date):
     content_type, content_string = contents.split(',')
 
     decoded = base64.b64decode(content_string)
@@ -150,7 +156,6 @@ def parse_contents(contents, filename, date, unique, route_gear_style, ascent_ge
               'scrollZoom': False,
               'showAxisDragHandles': False,}
 
-
     return html.Div([
         html.H5(filename),
         #dcc.RadioItems(['Unique', 'Duplicates'], 'Unique'),
@@ -171,7 +176,8 @@ def update_output(list_of_contents, list_of_names, list_of_dates, unique, route_
                   start_date, end_date):
     if list_of_contents is not None:
         children = [
-            parse_contents(c, n, d, unique, route_gear_style, ascent_gear_style, start_date, end_date) for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)]
+            parse_contents(c, n, d, unique, route_gear_style, ascent_gear_style, start_date,
+                           end_date) for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)]
         return children
 
 if __name__ == '__main__':
