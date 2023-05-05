@@ -5,6 +5,7 @@ Needs to be cleaned up. Tests and assertions need to be written because its poss
 """
 
 import argparse
+import datetime
 
 import pandas as pd  # type: ignore
 
@@ -193,9 +194,31 @@ def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def prepare_df(df: pd.DataFrame, unique='Unique route', ascent_gear_style='All') -> pd.DataFrame:
+def prepare_df(df: pd.DataFrame, unique='Unique route', ascent_gear_style='All', start_date=None,
+               end_date=None) -> pd.DataFrame:
     """ Prepares a dataframe for consumption by the dash app.
     """
+
+
+    df['Ascent Date'] = pd.to_datetime(df['Ascent Date'])
+    if start_date is not None:
+        #year, month, date = (int(x) for x in start_date.split('-'))
+        #start_date = datetime.date(year, month, date)
+        start_date = pd.to_datetime(start_date, utc=True)
+        print(start_date)
+        print(type(start_date))
+        df = df[df['Ascent Date'] >= start_date]
+
+
+    if end_date is not None:
+        #year, month, date = (int(x) for x in end_date.split('-'))
+        #end_date = datetime.date(year, month, date)
+        end_date = pd.to_datetime(end_date, utc=True)
+        df = df[df['Ascent Date'] <= end_date]
+
+
+    df['Ascent Date'] = df['Ascent Date'].dt.strftime('%d/%m/%Y')
+
 
     # TODO use logging here
     print("Number of ascents: {}".format(len(df)))
@@ -268,9 +291,6 @@ def prepare_df(df: pd.DataFrame, unique='Unique route', ascent_gear_style='All')
     # just using whole routes but I would prefer it if the output was per-pitch
 
     # TODO Separate trad from sport and bouldering
-
-    df['Ascent Date'] = pd.to_datetime(df['Ascent Date'])
-    df['Ascent Date'] = df['Ascent Date'].dt.strftime('%d/%m/%Y')
 
 
     # Update categories because dash will complain if we have categories with no values
