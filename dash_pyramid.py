@@ -38,6 +38,8 @@ app.layout = html.Div([
         multiple=True
     ),
     dcc.RadioItems(['Unique route', 'Unique route x style', 'Duplicates'], 'Unique route', id='unique-radio'),
+    html.B('Route Gear Style:'),
+    dcc.RadioItems(['All', 'Trad', 'Sport'], 'All', id='route-gear-style'),
     html.B('Ascent Style:'),
     dcc.RadioItems(['All', 'Trad', 'Sport', 'Second', 'Top rope'], 'All', id='ascent-gear-style'),
     html.B('Date range:'),
@@ -90,7 +92,7 @@ COLOR_MAP = {
     "Tick": "#66cccc",
 }
 
-def parse_contents(contents, filename, date, unique, ascent_gear_style, start_date, end_date):
+def parse_contents(contents, filename, date, unique, route_gear_style, ascent_gear_style, start_date, end_date):
     content_type, content_string = contents.split(',')
 
     decoded = base64.b64decode(content_string)
@@ -104,7 +106,7 @@ def parse_contents(contents, filename, date, unique, ascent_gear_style, start_da
             'There was an error processing this file.'
         ])
 
-    df = prepare_df(df, unique=unique, ascent_gear_style=ascent_gear_style, start_date=start_date,
+    df = prepare_df(df, unique=unique, route_gear_style=route_gear_style, ascent_gear_style=ascent_gear_style, start_date=start_date,
                     end_date=end_date)
 
     df = df.drop(['Ascent Label', 'Ascent ID', 'Ascent Link', 'Ascent Grade', 'Route Gear Style', 'Ascent Height', 'Route Height', 'Country Link', 'Crag Link'], axis=1)
@@ -161,14 +163,15 @@ def parse_contents(contents, filename, date, unique, ascent_gear_style, start_da
               State('upload-data', 'filename'),
               State('upload-data', 'last_modified'),
               Input('unique-radio', 'value'),
+              Input('route-gear-style', 'value'),
               Input('ascent-gear-style', 'value'),
               Input('date-range', 'start_date'),
               Input('date-range', 'end_date'))
-def update_output(list_of_contents, list_of_names, list_of_dates, unique, ascent_gear_style,
+def update_output(list_of_contents, list_of_names, list_of_dates, unique, route_gear_style, ascent_gear_style,
                   start_date, end_date):
     if list_of_contents is not None:
         children = [
-            parse_contents(c, n, d, unique, ascent_gear_style, start_date, end_date) for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)]
+            parse_contents(c, n, d, unique, route_gear_style, ascent_gear_style, start_date, end_date) for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)]
         return children
 
 if __name__ == '__main__':

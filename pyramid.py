@@ -194,7 +194,7 @@ def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def prepare_df(df: pd.DataFrame, unique='Unique route', ascent_gear_style='All', start_date=None,
+def prepare_df(df: pd.DataFrame, unique='Unique route', route_gear_style='All', ascent_gear_style='All', start_date=None,
                end_date=None) -> pd.DataFrame:
     """ Prepares a dataframe for consumption by the dash app.
     """
@@ -209,15 +209,16 @@ def prepare_df(df: pd.DataFrame, unique='Unique route', ascent_gear_style='All',
         print(type(start_date))
         df = df[df['Ascent Date'] >= start_date]
 
-
     if end_date is not None:
         #year, month, date = (int(x) for x in end_date.split('-'))
         #end_date = datetime.date(year, month, date)
         end_date = pd.to_datetime(end_date, utc=True)
         df = df[df['Ascent Date'] <= end_date]
 
-
     df['Ascent Date'] = df['Ascent Date'].dt.strftime('%d/%m/%Y')
+
+    if route_gear_style != 'All':
+        df = df[df['Route Gear Style'] == route_gear_style]
 
 
     # TODO use logging here
