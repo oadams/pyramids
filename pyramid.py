@@ -345,10 +345,8 @@ def prepare_df(df: pd.DataFrame, unique='Unique', route_gear_style='All', ascent
 
     df = reconcile_old_ticks_with_new_ticks(df)
 
-    if ascent_gear_style == 'Trad':
-        df = df[df['Ascent Type'].isin(['Trad onsight', 'Onsight solo', 'Trad flash', 'Trad red point', 'Solo', 'Trad lead with rest', 'Trad attempt'])]
-    elif ascent_gear_style == 'Sport':
-        df = df[df['Ascent Type'].isin(['Sport onsight', 'Sport flash', 'Sport red point', 'Pink point', 'Sport lead with rest', 'Sport attempt'])]
+    if ascent_gear_style == 'Lead':
+        df = df[df['Ascent Type'].isin(['Trad onsight', 'Onsight solo', 'Trad flash', 'Trad red point', 'Solo', 'Trad lead with rest', 'Trad attempt', 'Sport onsight', 'Sport flash', 'Sport red point', 'Pink point', 'Sport lead with rest', 'Sport attempt'])]
     elif ascent_gear_style == 'Second':
         df = df[df['Ascent Type'].isin(['Second onsight', 'Second flash', 'Second clean', 'Second with rest', 'Second', 'Second attempt'])]
     elif ascent_gear_style == 'Top rope':

@@ -44,7 +44,7 @@ app.layout = html.Div([
     dcc.RadioItems(['All', 'Trad', 'Sport'], 'All', id='route-gear-style'),
     html.Br(),
     html.B('Ascent Style:'),
-    dcc.RadioItems(['All', 'Trad', 'Sport', 'Second', 'Top rope'], 'All', id='ascent-gear-style'),
+    dcc.RadioItems(['All', 'Lead', 'Second', 'Top rope'], 'All', id='ascent-gear-style'),
     html.Br(),
     html.B('Date range:'),
     html.Br(),
