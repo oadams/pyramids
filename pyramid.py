@@ -16,7 +16,7 @@ THECRAG_NOT_ON = set(['Attempt', 'Hang dog', 'Retreat', 'Target',
 # My standard for a clean free ascent rules out the following. Aid solos are
 # not free and ticks, top ropes and seconds without any further qualification
 # are assumed to have involved weighting the rope.
-NOT_ON = THECRAG_NOT_ON.union({'Tick', 'Aid solo', 'Top rope', 'Second'})
+NOT_ON = THECRAG_NOT_ON.union({'Tick', 'Aid solo', 'Top rope', 'Second', 'Lead'})
 
 BATTLE_TO_TOP = set(['Hang dog', 'Top rope with rest', 'Second with rest', 'All free with rest',
                      'Tick'])
@@ -299,9 +299,13 @@ def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def prepare_df(df: pd.DataFrame, unique='Unique', route_gear_style='All', ascent_gear_style='All', start_date=None, end_date=None, country=None) -> pd.DataFrame:
+def prepare_df(df: pd.DataFrame, unique='Unique', route_gear_style='All', ascent_gear_style='All',
+               start_date=None, end_date=None, country=None, clean_only=False) -> pd.DataFrame:
     """ Prepares a dataframe for consumption by the dash app.
     """
+
+    if clean_only:
+        df = df[~df['Ascent Type'].isin(NOT_ON)]
 
     df = df[df['Route Gear Style'] != 'Boulder']
 
