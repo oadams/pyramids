@@ -54,6 +54,7 @@ app.layout = html.Div([
         max_date_allowed=datetime.date(2099, 1, 1),
         initial_visible_month=datetime.date(2023, 1, 1),
     ),
+    html.Button('Clear dates', id='clear-dates', n_clicks=0),
     dcc.Loading(
         html.Div(id='output-data-upload')
     ),
@@ -163,6 +164,12 @@ def parse_contents(contents, filename, date, unique, route_gear_style, ascent_ge
         dcc.Graph(figure=fig, config=config)
     ])
 
+@app.callback(Output('date-range', 'start_date'),
+              Output('date-range', 'end_date'),
+              Input('clear-dates', 'n_clicks'))
+def clear_dates(_clear_btn_n_clicks):
+    return None, None
+
 @app.callback(Output('output-data-upload', 'children'),
               Input('upload-data', 'contents'),
               State('upload-data', 'filename'),
@@ -172,8 +179,7 @@ def parse_contents(contents, filename, date, unique, route_gear_style, ascent_ge
               Input('ascent-gear-style', 'value'),
               Input('date-range', 'start_date'),
               Input('date-range', 'end_date'))
-def update_output(list_of_contents, list_of_names, list_of_dates, unique, route_gear_style, ascent_gear_style,
-                  start_date, end_date):
+def update_output(list_of_contents, list_of_names, list_of_dates, unique, route_gear_style, ascent_gear_style, start_date, end_date):
     if list_of_contents is not None:
         children = [
             parse_contents(c, n, d, unique, route_gear_style, ascent_gear_style, start_date,
