@@ -1,3 +1,5 @@
+""" A Dash app that creates a dynamic climb pyramid visualization. """
+
 import base64
 import datetime
 import io
@@ -5,7 +7,7 @@ import textwrap
 
 import dash
 from dash.dependencies import Input, Output, State
-from dash import dcc, html, dash_table
+from dash import dcc, html
 import plotly.express as px
 
 import pandas as pd
@@ -34,8 +36,6 @@ app.layout = html.Div([
             'textAlign': 'center',
             'margin': '10px'
         },
-        # Allow multiple files to be uploaded
-        multiple=True
     ),
     html.B('Routes:'),
     dcc.RadioItems(['Unique', 'Duplicates'], 'Unique', id='unique-radio'),
@@ -184,12 +184,13 @@ def clear_dates(_clear_btn_n_clicks):
               Input('date-range', 'start_date'),
               Input('date-range', 'end_date'),
               Input('free-ascent', 'value'))
-def update_output(list_of_contents, list_of_names, list_of_dates, unique, route_gear_style,
+def update_output(content, name, modified, unique, route_gear_style,
                   ascent_gear_style, start_date, end_date, free):
-    if list_of_contents is not None:
+    if content is not None:
         children = [
-            parse_contents(c, n, d, unique, route_gear_style, ascent_gear_style, start_date,
-                           end_date, free) for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)]
+            parse_contents(content, name, modified, unique, route_gear_style, ascent_gear_style, start_date,
+                           end_date, free)
+        ]
         return children
 
 if __name__ == '__main__':
