@@ -29,6 +29,84 @@ def clean_free(ascent_type: str) -> bool:
     """
     return ascent_type not in NOT_ON
 
+COUNTRY_TO_CONTEXT = {
+    'Austria': 'UIAA',
+    'Bulgaria': 'UIAA',
+    'Czech Republic': 'UIAA',
+    'Denmark': 'UIAA',
+    'Germany': 'UIAA',
+    'Hungary': 'UIAA',
+    'Montenegro': 'UIAA',
+    'Slovakia': 'UIAA',
+    'Ireland': 'British',
+    'Jersey': 'British',
+    'United Kingdom': 'British',
+    'Kenya': 'British'
+}
+
+CONTEXT_GRADE_TO_EWBANKS = {
+    'UIAA': {
+        '1-': 1,
+        '1': 2,
+        '1+': 3,
+        '2-': 4,
+        '2': 5,
+        '2+': 7,
+        '3-': 8,
+        '3': 9,
+        '3+': 10,
+        '4-': 11,
+        '4': 12,
+        '4+': 13,
+        '5-': 14,
+        '5': 15,
+        '5+': 16,
+        '6-': 16,
+        '6': 17,
+        '6+': 18,
+        '7-': 19,
+        '7': 20,
+        '7+': 21,
+        '8-': 22,
+        '8': 23,
+        '8+': 25,
+        '9-': 26,
+        '9': 27,
+        '9+': 28,
+        '10-': 29,
+        '10': 31,
+        '10+': 32,
+        '11-': 33,
+        '11': 34,
+        '11+': 35,
+        '12-': 37,
+        '12': 38,
+        '12+': 39
+    },
+    'British': {
+        '1a': 1,
+        '1b': 2,
+        '1c': 4,
+        '2a': 5,
+        '2b': 6,
+        '2c': 7,
+        '3a': 8,
+        '3b': 10,
+        '3c': 11,
+        '4a': 12,
+        '4b': 14,
+        '4c': 16,
+        '5a': 18,
+        '5b': 20,
+        '5c': 22,
+        '6a': 24,
+        '6b': 26,
+        '6c': 29,
+        '7a': 31,
+        '7b': 34,
+        '7c': 36,
+    }
+}
 
 GRADE_MAP = {
     '3.0': 1,
@@ -123,21 +201,48 @@ GRADE_MAP = {
 }
 
 
-def convert_to_ewbanks(grade: str) -> int:
-    """ Convert a grade to Ewbanks. Currently supports Yosemite Decimal System and French. """
+def convert_to_ewbanks(grade: str, country: str) -> int:
+    """ Convert a grade to Ewbanks. The idea is to support Ewbanks, YDS, French, British and UIAA.
 
-    if is_ewbanks(grade):
-        return int(grade)
-    elif grade in GRADE_MAP:
-        return GRADE_MAP[grade]
-    else:
-        raise ValueError(f'Cannot convert grade {grade} to Ewbanks. Code currently assumes only YDS or French.')
+    No gradings in Ewbanks, YDS, and French lead to ambiguities about the grading system used.
+    However, British grades can look like French grades and UIAA grades can look like Ewbanks
+    grades. The strategy we employ is to use the country to determine if a British or UIAA grade
+    context should be used. Otherwise, we just handle it as Ewbanks, YDS, or French.
+
+    There are two main limitations of this approach:
+        - Climbs reported using other grading systems will either get dropped or cause the system to
+          misgrade them if they are visually indistinct from, say, the French grades.
+        - Climbs that are graded in a way inconsistent with their grade context may be incorrectly
+          mapped. For example, there are sport climbs in the UK graded with the French system.
+          However in the CSV logbook the grade system is not shown, although it is shown on thecrag
+          UI. If we use the grade context we would assume the climb is a British graded climb. Such
+          is life, the only way around this is either to scrape every climb on thecrag, or for
+          thecrag to specify the grading system in the logbook CSV.
+    """
+
+    if country in COUNTRY_TO_CONTEXT:
+        context = COUNTRY_TO_CONTEXT[country]
+        # Here we split into components to remove things like British adverbial.
+        for component in grade.split():
+            if component in CONTEXT_GRADE_TO_EWBANKS[context]:
+                return CONTEXT_GRADE_TO_EWBANKS[context][component]
+        # If we get here and we couldn't convert it, then maybe it's in French... so we back off
+        # to code below.
+
+    # We split into components to handle stuff like aid grades, R ratings and X ratings.
+    for component in grade.split():
+        if is_ewbanks(component):
+            return int(component)
+        elif component in GRADE_MAP: # Handle French and YDS
+            return GRADE_MAP[component]
+    raise ValueError(f'Cannot convert grade {grade} to Ewbanks. Code currently supports French '
+                     'YDS, British and UIAA')
 
 
-def grade_supported(grade: str) -> bool:
+def grade_supported(grade: str, country: str) -> bool:
     try:
-        convert_to_ewbanks(grade)
-    except ValueError:
+        convert_to_ewbanks(grade, country)
+    except (ValueError, AttributeError):
         return False
 
     return True
@@ -198,6 +303,9 @@ def prepare_df(df: pd.DataFrame, unique='Unique', route_gear_style='All', ascent
     """ Prepares a dataframe for consumption by the dash app.
     """
 
+    df = df[df['Route Gear Style'] != 'Boulder']
+
+    # TODO Finish the country filter
     country = None
     if country is not None:
         df = df[df['Country'] == country]
@@ -275,15 +383,13 @@ def prepare_df(df: pd.DataFrame, unique='Unique', route_gear_style='All', ascent
 
     # Just setting ascent grade to always be the route grade.
     df['Ascent Grade'] = df['Route Grade']
-    # Strip R ratings.
-    df['Ascent Grade'] = df['Ascent Grade'].apply(lambda x: x.strip(' R') if isinstance(x, str)
-                                                  else x)
-    # Strip X ratings.
-    df['Ascent Grade'] = df['Ascent Grade'].apply(lambda x: x.strip(' X') if isinstance(x, str)
-                                                  else x)
-    # Remove non-Ewbanks/YSD graded stuff.
-    df['Ewbanks Grade'] = df['Ascent Grade'].apply(lambda x: convert_to_ewbanks(x) if
-                                                   grade_supported(x) else None)
+
+    # Handle grade conversion
+    df['Ewbanks Grade'] = df[['Ascent Grade', 'Country']].apply(lambda x:
+                                                                convert_to_ewbanks(x['Ascent Grade'],
+                                                                                   x['Country']) if
+                                                                grade_supported(x['Ascent Grade'],
+                                                                                x['Country']) else None, axis=1)
     print('NA grades:')
     print(df[df['Ewbanks Grade'].isna()][['Route Name', 'Ascent Grade']])
     df = df.dropna(subset=['Ewbanks Grade'])
