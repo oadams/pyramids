@@ -5,7 +5,7 @@ Needs to be cleaned up. Tests and assertions need to be written because its poss
 """
 
 import argparse
-import datetime
+from typing import Union
 
 import pandas as pd  # type: ignore
 
@@ -17,17 +17,6 @@ THECRAG_NOT_ON = set(['Attempt', 'Hang dog', 'Retreat', 'Target',
 # not free and ticks, top ropes and seconds without any further qualification
 # are assumed to have involved weighting the rope.
 NOT_ON = THECRAG_NOT_ON.union({'Tick', 'Aid solo', 'Top rope', 'Second', 'Lead', 'Aid'})
-
-BATTLE_TO_TOP = set(['Hang dog', 'Top rope with rest', 'Second with rest', 'All free with rest',
-                     'Tick'])
-
-
-def clean_free(ascent_type: str) -> bool:
-    """ Returns true if an ascent type is clean and free
-        - Clean: The rope was not weighted (toproping is acceptable)
-        - Free: Not aid climbing
-    """
-    return ascent_type not in NOT_ON
 
 COUNTRY_TO_CONTEXT = {
     'Austria': 'UIAA',
@@ -299,44 +288,33 @@ def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def prepare_df(df: pd.DataFrame, unique='Unique', route_gear_style='All', ascent_gear_style='All',
-               start_date=None, end_date=None, country=None, free_only=False) -> pd.DataFrame:
-    """ Prepares a dataframe for consumption by the dash app.
-    """
+def prepare_df(df: pd.DataFrame, unique: str = 'Unique', route_gear_style: str = 'All',
+               ascent_gear_style: str = 'All',
+               start_date: Union[str, None] = None, end_date: Union[str, None] = None,
+               country: Union[str, None] = None, free_only: bool = False) -> pd.DataFrame:
+    """ Prepares a dataframe for consumption by the dash app.  """
 
+    # Do all our filtering first before any subsequent processing
     if free_only:
         df = df[~df['Ascent Type'].isin(NOT_ON)]
 
     df = df[df['Route Gear Style'] != 'Boulder']
 
-    # TODO Finish the country filter
-    country = None
     if country is not None:
         df = df[df['Country'] == country]
 
     df['Ascent Date'] = pd.to_datetime(df['Ascent Date'])
     if start_date is not None:
-        #year, month, date = (int(x) for x in start_date.split('-'))
-        #start_date = datetime.date(year, month, date)
         start_date = pd.to_datetime(start_date, utc=True)
-        print(start_date)
-        print(type(start_date))
         df = df[df['Ascent Date'] >= start_date]
-
     if end_date is not None:
         #year, month, date = (int(x) for x in end_date.split('-'))
         #end_date = datetime.date(year, month, date)
         end_date = pd.to_datetime(end_date, utc=True)
         df = df[df['Ascent Date'] <= end_date]
 
-    df['Ascent Date'] = df['Ascent Date'].dt.strftime('%d/%m/%Y')
-
     if route_gear_style != 'All':
         df = df[df['Route Gear Style'] == route_gear_style]
-
-
-    # TODO use logging here
-    print("Number of ascents: {}".format(len(df)))
 
     # Drop targets, marks and hits, which are all non-climbs.
     df = df[df['Ascent Type'] != 'Target']
@@ -356,15 +334,21 @@ def prepare_df(df: pd.DataFrame, unique='Unique', route_gear_style='All', ascent
     elif ascent_gear_style == 'Top rope':
         df = df[df['Ascent Type'].isin(['Top rope onsight', 'Top rope flash', 'Top rope clean', 'Top rope with rest', 'Top rope', 'Top rope attempt'])]
 
+    # Now do actual manipulations of the dataframe
+    df['Ascent Date'] = df['Ascent Date'].dt.strftime('%d/%m/%Y')
+
     # Here we impose an ordering on ascent types, sort by them and then remove
     # duplicate ascents so that only the best ascent of a given climb is used
     # in the pyramid.
-
     categories = ['Trad onsight', 'Onsight solo', 'Sport onsight', 'Second onsight', 'Top rope onsight',
                   'Trad flash', 'Sport flash', 'Second flash', 'Top rope flash',
-                  'Trad red point', 'Solo', 'Sport red point', 'Red point', 'Ground up red point', 'Pink point', 'Second clean', 'Top rope clean',
-                  'Roped Solo', 'Clean', 'Aid', 'Aid solo', 'Trad lead with rest', 'Sport lead with rest', 'Hang dog',
-                  'Second with rest', 'Top rope with rest', 'Trad attempt', 'Sport attempt', 'Second attempt', 'Top rope attempt', 'Attempt', 'Retreat', 'Working', 'Onsight', 'Flash', 'Top rope', 'Lead', 'Tick', 'All free with rest']
+                  'Trad red point', 'Solo', 'Sport red point', 'Red point', 'Ground up red point',
+                  'Pink point', 'Second clean', 'Top rope clean',
+                  'Roped Solo', 'Clean', 'Aid', 'Aid solo', 'Trad lead with rest',
+                  'Sport lead with rest', 'Hang dog', 'Second with rest', 'Top rope with rest',
+                  'Trad attempt', 'Sport attempt', 'Second attempt', 'Top rope attempt', 'Attempt',
+                  'Retreat', 'Working', 'Onsight', 'Flash', 'Top rope', 'Lead', 'Tick',
+                  'All free with rest']
     # Set the dataframe's categories to be the set of ascent types found in the dataframe and
     # maintain the same ordering as this predefined list of categories. Any other ascent types not
     # defined by the ordering are tacked on to the end.
@@ -374,14 +358,9 @@ def prepare_df(df: pd.DataFrame, unique='Unique', route_gear_style='All', ascent
             categories.append(category)
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
     df = df.sort_values('Ascent Type')
-    # TODO use loggin
-    print("Number of ascents after handling categories: {}".format(len(df)))
+    # We drop duplicates after doing the ordering so that the best form of the ascent is retained
     if unique == 'Unique':
         df = df.drop_duplicates(['Route ID'])
-    elif unique == 'Unique route x style':
-        df = df.drop_duplicates(['Route ID', 'Ascent Type'])
-    # TODO use logging
-    print("Number of ascents after dropping duplicates: {}".format(len(df)))
 
     # Just setting ascent grade to always be the route grade.
     df['Ascent Grade'] = df['Route Grade']
@@ -396,19 +375,13 @@ def prepare_df(df: pd.DataFrame, unique='Unique', route_gear_style='All', ascent
     print(df[df['Ewbanks Grade'].isna()][['Route Name', 'Ascent Grade']])
     df = df.dropna(subset=['Ewbanks Grade'])
 
+    # This is used to determine the bar tile width in the bar chart. Every ascent tile should be
+    # equal width, so we set this uniformly to 1.
     df['num'] = 1
-
-    # TODO Break stats down by pitches for more fine-grained info. Currently
-    # just using whole routes but I would prefer it if the output was per-pitch
-
-    # TODO Separate trad from sport and bouldering
-
 
     # Update categories because dash will complain if we have categories with no values
     categories = [category for category in categories if category in df['Ascent Type'].unique()]
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
-
-    print("Number of ascents at end of preprocessing {}".format(len(df)))
 
     return df
 
