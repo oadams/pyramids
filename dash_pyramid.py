@@ -38,19 +38,28 @@ app.layout = html.Div([
             'margin': '10px'
         },
     ),
-    html.B('Routes:'),
-    dcc.RadioItems(['Unique', 'Duplicates'], 'Unique', id='unique-radio'),
+    html.Table(
+        html.Tr([
+            html.Td(html.Div([
+                html.B('Routes:'),
+                dcc.RadioItems(['Unique', 'Duplicates'], 'Unique', id='unique-radio')
+            ]), style={"vertical-align": "top", 'width': '150px'}),
+            html.Td(html.Div([
+                html.B('Route Gear Style:'),
+                dcc.RadioItems(['All', 'Trad', 'Sport'], 'All', id='route-gear-style'),
+            ]), style={"vertical-align": "top", 'width': '150px'}),
+            html.Td(html.Div([
+                html.B('Ascent Style:'),
+                dcc.RadioItems(['All', 'Lead', 'Second', 'Top rope'], 'All', id='ascent-gear-style'),
+            ]), style={"vertical-align": "top", 'width': '150px'}),
+            html.Td(html.Div([
+                html.B('Free:'),
+                dcc.RadioItems(['All', 'Free only'], 'All', id='free-ascent'),
+            ]), style={"vertical-align": "top", 'width': '150px'}),
+        ])
+    ),
     html.Br(),
-    html.B('Route Gear Style:'),
-    dcc.RadioItems(['All', 'Trad', 'Sport'], 'All', id='route-gear-style'),
-    html.Br(),
-    html.B('Ascent Style:'),
-    dcc.RadioItems(['All', 'Lead', 'Second', 'Top rope'], 'All', id='ascent-gear-style'),
-    html.Br(),
-    html.B('Free:'),
-    dcc.RadioItems(['All', 'Free only'], 'All', id='free-ascent'),
-    html.Br(),
-    html.B('Date range:'),
+    html.B('Date Range:'),
     html.Br(),
     dcc.DatePickerRange(
         id='date-range',
@@ -145,7 +154,7 @@ def parse_contents(contents, filename, unique, route_gear_style, ascent_gear_sty
     fig = px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h',
                  hover_data=['Country', 'Crag Name', 'Route Name', 'Ascent Date', 'Comment'],
                  color_discrete_map=color_map,
-                 labels={'num': 'Number of ascents'})
+                 labels={'num': 'Number of Ascents'})
 
     # The layout when you mouse over an ascent tile. `customdata` gives access to the bar chart's
     # hover_data.
@@ -175,8 +184,8 @@ def parse_contents(contents, filename, unique, route_gear_style, ascent_gear_sty
               'showAxisDragHandles': False,}
 
     return html.Div([
-        html.H5(filename),
-        html.B(f'Number of climbs: {len(df)}'),
+        html.Br(),
+        html.B(f'Number of climbs: {len(df)}', style={"color": "#555555"}),
         dcc.Graph(figure=fig, config=config)
     ])
 
@@ -189,6 +198,7 @@ def clear_dates(_):
 
 
 @app.callback(Output('output-data-upload', 'children'),
+              Output('upload-data', 'children'),
               Input('upload-data', 'contents'),
               State('upload-data', 'filename'),
               Input('unique-radio', 'value'),
@@ -209,7 +219,15 @@ def update_output(content, name, unique, route_gear_style,
                            start_date,
                            end_date, free)
         )
-    return children
+
+
+    upload_children=html.Div([
+        'Drag and Drop or ',
+        html.A('Select'),
+        (f' your CSV logbook from thecrag.com: {name}' if name is not None else
+         ' your CSV logbook from thecrag.com')
+    ]),
+    return children, upload_children
 
 if __name__ == '__main__':
     app.run_server(debug=True)
