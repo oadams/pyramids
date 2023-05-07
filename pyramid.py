@@ -281,10 +281,6 @@ def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[(df['Ascent Gear Style'] == 'Sport') & (df['Ascent Type'] == 'Hang dog'), 'Ascent Type'] = 'Sport lead with rest'
     df.loc[(df['Ascent Gear Style'] == 'Free solo') & (df['Ascent Type'] == 'Red point'), 'Ascent Type'] = 'Solo'
     df.loc[(df['Ascent Gear Style'] == 'Free solo') & (df['Ascent Type'] == 'Onsight'), 'Ascent Type'] = 'Onsight solo'
-    # TODO Handle other free solo subvariants.
-    # TODO Handle 'Second'/'tick' etc.
-    # TODO Look at this and sort out edge cases df[['Ascent Type', 'Ascent Gear Style']].drop_duplicates(). There might be some cases that are missing.
-    # TODO Now that there is a second flash and second onsight possibility, This code should go through teh log history and flag second cleans as second flashes or onsights.
     return df
 
 
@@ -308,8 +304,6 @@ def prepare_df(df: pd.DataFrame, unique: str = 'Unique', route_gear_style: str =
         start_date = pd.to_datetime(start_date, utc=True)
         df = df[df['Ascent Date'] >= start_date]
     if end_date is not None:
-        #year, month, date = (int(x) for x in end_date.split('-'))
-        #end_date = datetime.date(year, month, date)
         end_date = pd.to_datetime(end_date, utc=True)
         df = df[df['Ascent Date'] <= end_date]
 
