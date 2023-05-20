@@ -33,6 +33,8 @@ COUNTRY_TO_CONTEXT = {
     'Kenya': 'British'
 }
 
+GYMS = ['Inner Melbourne - Hardrock CBD - Climbing routes']
+
 CONTEXT_GRADE_TO_EWBANKS = {
     'UIAA': {
         '1-': 1,
@@ -287,7 +289,7 @@ def reconcile_old_ticks_with_new_ticks(df: pd.DataFrame) -> pd.DataFrame:
 def prepare_df(df: pd.DataFrame, unique: str = 'Unique', route_gear_style: str = 'All',
                ascent_gear_style: str = 'All',
                start_date: Union[str, None] = None, end_date: Union[str, None] = None,
-               country: Union[str, None] = None, free_only: bool = False) -> pd.DataFrame:
+               country: Union[str, None] = None, free_only: bool = False, gym: str = 'Outside') -> pd.DataFrame:
     """ Prepares a dataframe for consumption by the dash app.  """
 
     # Do all our filtering first before any subsequent processing
@@ -372,6 +374,12 @@ def prepare_df(df: pd.DataFrame, unique: str = 'Unique', route_gear_style: str =
     # This is used to determine the bar tile width in the bar chart. Every ascent tile should be
     # equal width, so we set this uniformly to 1.
     df['num'] = 1
+
+    df['Gym'] = df['Crag Path'].isin(GYMS)
+    if gym == 'Gym':
+        df = df[df['Gym']]
+    elif gym == 'Outside':
+        df = df[~df['Gym']]
 
     # Update categories because dash will complain if we have categories with no values
     categories = [category for category in categories if category in df['Ascent Type'].unique()]

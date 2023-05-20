@@ -56,8 +56,12 @@ app.layout = html.Div([
                 html.B('Free:'),
                 dcc.RadioItems(['All', 'Free only'], 'All', id='free-ascent'),
             ]), style={"vertical-align": "top", 'width': '150px'}),
-        ])
-    ),
+            html.Td(html.Div([
+                html.B('Outside/Gym:'),
+                dcc.RadioItems(['All', 'Outside', 'Gym'], 'Outside', id='gym'),
+            ]), style={"vertical-align": "top", 'width': '150px'}),
+        ], style={'border': '0px'}),
+        style={'border': '0px'}),
     html.Br(),
     html.B('Date Range:'),
     html.Br(),
@@ -117,7 +121,7 @@ COLOR_MAP = {
 
 
 def parse_contents(contents, filename, unique, route_gear_style, ascent_gear_style,
-                   start_date, end_date, free):
+                   start_date, end_date, free, gym):
     """ Function that preprocesses the dataframe according to the various other options.  """
     _, content_string = contents.split(',')
 
@@ -134,7 +138,7 @@ def parse_contents(contents, filename, unique, route_gear_style, ascent_gear_sty
 
     df = prepare_df(df, unique=unique, route_gear_style=route_gear_style,
                     ascent_gear_style=ascent_gear_style, start_date=start_date,
-                    end_date=end_date, free_only=(free == 'Free only'))
+                    end_date=end_date, free_only=(free == 'Free only'), gym=gym)
 
     df = df.drop(['Ascent Label', 'Ascent ID', 'Ascent Link', 'Ascent Grade', 'Route Gear Style',
                   'Ascent Height', 'Route Height', 'Country Link', 'Crag Link'], axis=1)
@@ -154,7 +158,7 @@ def parse_contents(contents, filename, unique, route_gear_style, ascent_gear_sty
     fig = px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h',
                  hover_data=['Country', 'Crag Name', 'Route Name', 'Ascent Date', 'Comment'],
                  color_discrete_map=color_map,
-                 labels={'num': 'Number of Ascents'})
+                 labels={'num': 'Number of Ascents'}, height=1000)
 
     # The layout when you mouse over an ascent tile. `customdata` gives access to the bar chart's
     # hover_data.
@@ -206,9 +210,10 @@ def clear_dates(_):
               Input('ascent-gear-style', 'value'),
               Input('date-range', 'start_date'),
               Input('date-range', 'end_date'),
-              Input('free-ascent', 'value'))
+              Input('free-ascent', 'value'),
+              Input('gym', 'value'))
 def update_output(content, name, unique, route_gear_style,
-                  ascent_gear_style, start_date, end_date, free):
+                  ascent_gear_style, start_date, end_date, free, gym):
     """ Any time the radio buttons or upload component is changed, handle it and return components
     to render. """
     children = []
@@ -217,7 +222,7 @@ def update_output(content, name, unique, route_gear_style,
             parse_contents(content, name, unique,
                            route_gear_style, ascent_gear_style,
                            start_date,
-                           end_date, free)
+                           end_date, free, gym)
         )
 
 
