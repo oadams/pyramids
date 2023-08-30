@@ -40,26 +40,25 @@ app.layout = html.Div([
     ),
     html.Table(
         html.Tr([
-            html.Td(html.Div([
+            html.Td([
                 html.B('Routes:'),
-                dcc.RadioItems(['Unique', 'Duplicates'], 'Unique', id='unique-radio')
-            ]), style={"vertical-align": "top", 'width': '150px'}),
-            html.Td(html.Div([
+                dcc.RadioItems(['Unique', 'Duplicates'], 'Unique', id='unique-radio')],
+                    style={"vertical-align": "top", 'width': '150px', 'border-bottom-width': '0px'}),
+            html.Td([
                 html.B('Route Gear Style:'),
                 dcc.RadioItems(['All', 'Trad', 'Sport'], 'All', id='route-gear-style'),
-            ]), style={"vertical-align": "top", 'width': '150px'}),
-            html.Td(html.Div([
+            ], style={"vertical-align": "top", 'width': '150px', 'border-bottom-width': '0px'}),
+            html.Td([
                 html.B('Ascent Style:'),
                 dcc.RadioItems(['All', 'Lead', 'Second', 'Top rope'], 'All', id='ascent-gear-style'),
-            ]), style={"vertical-align": "top", 'width': '150px'}),
-            html.Td(html.Div([
+            ], style={"vertical-align": "top", 'width': '150px', 'border-bottom-width': '0px'}),
+            html.Td([
                 html.B('Free:'),
                 dcc.RadioItems(['All', 'Free only'], 'All', id='free-ascent'),
-            ]), style={"vertical-align": "top", 'width': '150px'}),
-            html.Td(html.Div([
-                html.B('Outside/Gym:'),
-                dcc.RadioItems(['All', 'Outside', 'Gym'], 'Outside', id='gym'),
-            ]), style={"vertical-align": "top", 'width': '150px'}),
+            ], style={"vertical-align": "top", 'width': '150px', 'border-bottom-width': '0px'}),
+            html.Div(id='custom-radio-buttons'),
+            html.Td([
+            ])
         ], style={'border': '0px'}),
         style={'border': '0px'}),
     html.Br(),
@@ -121,7 +120,7 @@ COLOR_MAP = {
 
 
 def parse_contents(contents, filename, unique, route_gear_style, ascent_gear_style,
-                   start_date, end_date, free, gym):
+                   start_date, end_date, free, gym='Outside'):
     """ Function that preprocesses the dataframe according to the various other options.  """
     _, content_string = contents.split(',')
 
@@ -203,6 +202,7 @@ def clear_dates(_):
 
 @app.callback(Output('output-data-upload', 'children'),
               Output('upload-data', 'children'),
+              Output('custom-radio-buttons', 'children'),
               Input('upload-data', 'contents'),
               State('upload-data', 'filename'),
               Input('unique-radio', 'value'),
@@ -210,10 +210,9 @@ def clear_dates(_):
               Input('ascent-gear-style', 'value'),
               Input('date-range', 'start_date'),
               Input('date-range', 'end_date'),
-              Input('free-ascent', 'value'),
-              Input('gym', 'value'))
+              Input('free-ascent', 'value'))
 def update_output(content, name, unique, route_gear_style,
-                  ascent_gear_style, start_date, end_date, free, gym):
+                  ascent_gear_style, start_date, end_date, free):
     """ Any time the radio buttons or upload component is changed, handle it and return components
     to render. """
     children = []
@@ -222,9 +221,16 @@ def update_output(content, name, unique, route_gear_style,
             parse_contents(content, name, unique,
                            route_gear_style, ascent_gear_style,
                            start_date,
-                           end_date, free, gym)
+                           end_date, free)
         )
 
+    custom_radio_buttons = []
+    if name and name.startswith('SCRANGE'):
+        button = html.Td([
+            html.B('Outside/Gym:'),
+            dcc.RadioItems(['All', 'Outside', 'Gym'], 'Outside', id='gym'),
+        ], style={"vertical-align": "top", 'width': '150px', 'border-bottom-width': '0px'})
+        custom_radio_buttons.append(button)
 
     upload_children=html.Div([
         'Drag and Drop or ',
@@ -232,7 +238,7 @@ def update_output(content, name, unique, route_gear_style,
         (f' your CSV logbook from thecrag.com: {name}' if name is not None else
          ' your CSV logbook from thecrag.com')
     ]),
-    return children, upload_children
+    return children, upload_children, custom_radio_buttons
 
 if __name__ == '__main__':
     app.run_server(debug=True)
