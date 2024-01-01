@@ -158,8 +158,10 @@ def parse_contents(contents, filename, unique, route_gear_style, ascent_gear_sty
     fig = px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h',
                  hover_data=['Country', 'Crag Name', 'Route Name', 'Ascent Date', 'Comment'],
                  color_discrete_map=color_map,
-                 labels={'num': 'Number of Ascents'})
-
+                 labels={'num': 'Number of Ascents'},
+                 text='bar_text')
+    fig.update_traces(textangle=0, textfont_size=10)
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='show')
     # The layout when you mouse over an ascent tile. `customdata` gives access to the bar chart's
     # hover_data.
     fig.update_traces(hovertemplate=('Ascent Date: %{customdata[3]}<br>'

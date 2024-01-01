@@ -358,8 +358,8 @@ def prepare_df(df: pd.DataFrame, unique: str = 'Unique', route_gear_style: str =
     if unique == 'Unique':
         df = df.drop_duplicates(['Route ID'])
 
-    # Just setting ascent grade to always be the route grade.
-    df['Ascent Grade'] = df['Route Grade']
+    # Use Ascent grade if it is assigned, otherwise back off to the route grade.
+    df.loc[df['Ascent Grade'].isna(), 'Ascent Grade'] = df.loc[df['Ascent Grade'].isna()]['Route Grade']
 
     # Handle grade conversion
     df['Ewbanks Grade'] = df[['Ascent Grade', 'Country']].apply(lambda x:
