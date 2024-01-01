@@ -155,6 +155,12 @@ def parse_contents(contents, filename, unique, route_gear_style, ascent_gear_sty
         else:
             color_map[ascent_type] = '#66cccc'
 
+    # Handling hashtag downclimb
+    df['Contains_Downclimb'] = df['Comment'].str.contains('#downclimb', case=False)
+    df.loc[df['Contains_Downclimb'].isna(), 'Contains_Downclimb'] = False
+    df['bar_text'] = ''
+    df.loc[df['Contains_Downclimb'], 'bar_text'] = 'D'
+
     fig = px.bar(df, x='num', y='Ewbanks Grade', color='Ascent Type', orientation='h',
                  hover_data=['Country', 'Crag Name', 'Route Name', 'Ascent Date', 'Comment'],
                  color_discrete_map=color_map,
