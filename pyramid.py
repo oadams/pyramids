@@ -354,9 +354,19 @@ def prepare_df(df: pd.DataFrame, unique: str = 'Unique', route_gear_style: str =
             categories.append(category)
     df['Ascent Type'] = pd.Categorical(df['Ascent Type'], categories)
     df = df.sort_values('Ascent Type')
+
+    df['Gym'] = df['Crag Path'].isin(GYMS)
     # We drop duplicates after doing the ordering so that the best form of the ascent is retained
     if unique == 'Unique':
         df = df.drop_duplicates(['Route ID'])
+    elif unique == 'Angie Unique':
+        # Gym routes of the same grade collapse to one route. Filtering for 'unique' doesn't give a
+        # proper representation when considering outdoors + indoors. 'Angie Unique' means: unique
+        # outdoors but duplicates indoors. This means the user should not log actual duplicates
+        # of routes in gyms when using thecrag.
+        df_gym = df[df['Gym']]
+        df_outside = df[~df['Gym']].drop_duplicates(['Route ID'])
+        df = pd.concat([df_gym, df_outside])
 
     # Use Ascent grade if it is assigned, otherwise back off to the route grade.
     df.loc[df['Ascent Grade'].isna(), 'Ascent Grade'] = df.loc[df['Ascent Grade'].isna()]['Route Grade']
@@ -375,7 +385,6 @@ def prepare_df(df: pd.DataFrame, unique: str = 'Unique', route_gear_style: str =
     # equal width, so we set this uniformly to 1.
     df['num'] = 1
 
-    df['Gym'] = df['Crag Path'].isin(GYMS)
     if gym == 'Gym':
         df = df[df['Gym']]
     elif gym == 'Outside':
@@ -389,7 +398,8 @@ def prepare_df(df: pd.DataFrame, unique: str = 'Unique', route_gear_style: str =
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('csv', help='Your logbook from thecrag.com in CSV format.')
+#parser.add_argument('csv', help='Your logbook from thecrag.com in CSV format.')
+parser.add_argument('--csv', help='Your logbook from thecrag.com in CSV format.', default='/Users/oadams/code/pyramids/SCRANGE-logbook-2024-01-01.csv')
 
 # How about we try doing all the IO here and make all our functions pure?
 if __name__ == '__main__':
@@ -397,4 +407,3 @@ if __name__ == '__main__':
     df = pd.read_csv(args.csv)
     breakpoint()
     df = prepare_df(df)
-    breakpoint()

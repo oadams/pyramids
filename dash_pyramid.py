@@ -42,7 +42,7 @@ app.layout = html.Div([
         html.Tr([
             html.Td(html.Div([
                 html.B('Routes:'),
-                dcc.RadioItems(['Unique', 'Duplicates'], 'Unique', id='unique-radio')
+                dcc.RadioItems(['Unique', 'Duplicates', 'Angie Unique'], 'Unique', id='unique-radio')
             ]), style={"vertical-align": "top", 'width': '150px'}),
             html.Td(html.Div([
                 html.B('Route Gear Style:'),
